@@ -15,4 +15,8 @@
       <ProjectReference Include="..\BMRM.Core\BMRM.Core.csproj" />
       <ProjectReference Include="..\BMRM.Infrastructure\BMRM.Infrastructure.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Include="Configuration\releasePatterns.json" />
+    </ItemGroup>
 </Project>

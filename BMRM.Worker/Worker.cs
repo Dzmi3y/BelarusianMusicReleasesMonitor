@@ -1,23 +1,44 @@
+using BMRM.Core.Interfaces;
+using BMRM.Core.Models;
+using BMRM.Infrastructure.Services;
+
 namespace BMRM.Worker;
 
-public class Worker : BackgroundService
+public class Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory) : BackgroundService
 {
-    private readonly ILogger<Worker> _logger;
-
-    public Worker(ILogger<Worker> logger)
-    {
-        _logger = logger;
-    }
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (_logger.IsEnabled(LogLevel.Information))
+            if (logger.IsEnabled(LogLevel.Information))
             {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
             }
 
+
+            //test
+            using var scope = _scopeFactory.CreateScope();
+            var parser = scope.ServiceProvider.GetRequiredService<IReleaseTextParserService>();
+
+            using var stream = File.OpenRead("C:\\Users\\dzmi3\\Downloads\\test.html");
+
+            using var reader = new StreamReader(stream);
+            var list = new List<Release>();
+            while (!reader.EndOfStream)
+            {
+                string? line = await reader.ReadLineAsync();
+
+                var res = parser.ParseSingleReleaseBlock(line);
+                if (res is not null)
+                {
+                    list.Add(res);
+                }
+            }
+            // test
+
+            logger.LogInformation("Worker stopped at: {time}", DateTimeOffset.Now);
             await Task.Delay(1000, stoppingToken);
         }
     }
