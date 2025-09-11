@@ -32,7 +32,7 @@ public class ReleaseTextParserService(IOptions<ReleasePatternConfig> options) : 
         var artist = ExtractValue(input, _patterns.Artist);
         var title = ExtractValue(input, _patterns.Title);
 
-        if (string.IsNullOrWhiteSpace(artist) && string.IsNullOrWhiteSpace(title))
+        if (string.IsNullOrWhiteSpace(artist) || string.IsNullOrWhiteSpace(title))
             return null;
 
         var type = DetermineType(input);
@@ -45,6 +45,7 @@ public class ReleaseTextParserService(IOptions<ReleasePatternConfig> options) : 
             Genres = ExtractValue(input, _patterns.Genres),
             City = ExtractValue(input, _patterns.City),
             Type = type,
+            CreatedAt = DateTime.Now,
             Id = ReleaseHasher.GetId(artist, title, type)
         };
 
