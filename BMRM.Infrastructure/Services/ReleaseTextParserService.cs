@@ -10,12 +10,12 @@ namespace BMRM.Infrastructure.Services;
 public class ReleaseTextParserService(IOptions<ReleasePatternConfig> options) : IReleaseTextParserService
 {
     private readonly ReleasePatternConfig _patterns = options.Value;
-    private readonly string startWord = "Выканаўц[аы]";
-    private readonly string endWord = "copy_history";
+    private readonly string _startWord = "Выканаўц[аы]";
+    private readonly string _endWord = "copy_history";
 
     public Release? ParseSingleReleaseBlock(string html)
     {
-        var pattern = $"{startWord}.*?{endWord}";
+        var pattern = $"{_startWord}.*?{_endWord}";
         var match = Regex.Match(html, pattern, RegexOptions.Singleline);
 
 
@@ -35,7 +35,7 @@ public class ReleaseTextParserService(IOptions<ReleasePatternConfig> options) : 
             .Replace("&lt;", "\n")
             .Replace("&quot;", "\"");
 
-        int endIndex = input.IndexOf(endWord, StringComparison.OrdinalIgnoreCase);
+        int endIndex = input.IndexOf(_endWord, StringComparison.OrdinalIgnoreCase);
         if (endIndex > 0)
             input = input.Substring(0, endIndex);
 

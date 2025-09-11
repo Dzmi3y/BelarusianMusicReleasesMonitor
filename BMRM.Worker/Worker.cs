@@ -21,22 +21,30 @@ public class Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory) :
             //test
             using var scope = _scopeFactory.CreateScope();
             var parser = scope.ServiceProvider.GetRequiredService<IReleaseTextParserService>();
+            var downloader = scope.ServiceProvider.GetRequiredService<IHtmlDownloaderService>();
 
-            using var stream = File.OpenRead("C:\\Users\\dzmi3\\Downloads\\test.html");
 
-            using var reader = new StreamReader(stream);
-            var list = new List<Release>();
-            while (!reader.EndOfStream)
+            try
             {
-                string? line = await reader.ReadLineAsync();
-
-                var res = parser.ParseSingleReleaseBlock(line);
-                if (res is not null)
+                using var reader = await downloader.GetHtmlStreamReaderAsync("https://vk.com/wall-75669943?own=1", stoppingToken);
+                
+                var list = new List<Release>();
+                while (!reader.EndOfStream)
                 {
-                    list.Add(res);
+                    string? line = await reader.ReadLineAsync();
+
+                    var res = parser.ParseSingleReleaseBlock(line);
+                    if (res is not null)
+                    {
+                        list.Add(res);
+                    }
                 }
+                // test
             }
-            // test
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to load HTML");
+            }
 
             logger.LogInformation("Worker stopped at: {time}", DateTimeOffset.Now);
             await Task.Delay(1000, stoppingToken);
