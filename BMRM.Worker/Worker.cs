@@ -4,9 +4,11 @@ using BMRM.Infrastructure.Services;
 
 namespace BMRM.Worker;
 
-public class Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory) : BackgroundService
+public class Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory, IConfiguration configuration)
+    : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+    private readonly string _url = configuration.GetValue<string>("ParsingPageUrl");
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -14,20 +16,17 @@ public class Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory) :
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                logger.LogInformation("BMRM.Worker running at: {time}", DateTimeOffset.Now);
             }
 
-
-            //test
             using var scope = _scopeFactory.CreateScope();
             var parser = scope.ServiceProvider.GetRequiredService<IReleaseTextParserService>();
             var downloader = scope.ServiceProvider.GetRequiredService<IHtmlDownloaderService>();
-
-
+            
             try
             {
-                using var reader = await downloader.GetHtmlStreamReaderAsync("https://vk.com/wall-75669943?own=1", stoppingToken);
-                
+                using var reader = await downloader.GetHtmlStreamReaderAsync(_url, stoppingToken);
+
                 var list = new List<Release>();
                 while (!reader.EndOfStream)
                 {
@@ -39,14 +38,15 @@ public class Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory) :
                         list.Add(res);
                     }
                 }
-                // test
+
+                logger.LogInformation("Found {ListCount} releases", list.Count);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to load HTML");
             }
 
-            logger.LogInformation("Worker stopped at: {time}", DateTimeOffset.Now);
+            logger.LogInformation("BMRM.Worker stopped at: {time}", DateTimeOffset.Now);
             await Task.Delay(1000, stoppingToken);
         }
     }
