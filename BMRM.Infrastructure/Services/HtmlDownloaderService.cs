@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using System.Text;
+using BMRM.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace BMRM.Infrastructure.Services;
@@ -9,7 +10,6 @@ public class HtmlDownloaderService(HttpClient httpClient, ILogger<HtmlDownloader
 {
     static HtmlDownloaderService()
     {
-        // Register extended encodings (e.g., windows-1251)
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
     public async Task<StreamReader> GetHtmlStreamReaderAsync(string url, CancellationToken cancellationToken = default)
