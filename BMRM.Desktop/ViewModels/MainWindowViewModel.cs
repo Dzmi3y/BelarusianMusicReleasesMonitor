@@ -4,7 +4,7 @@ namespace BMRM.Desktop.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
-        private string _title = "Prism Application";
+        private string _title = "BMRM";
 
         public string Title
         {

@@ -1,10 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <AssemblyName>BMRM</AssemblyName>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net6.0-windows</TargetFramework>
         <UseWPF>true</UseWPF>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ApplicationIcon>Resources\favicon.ico</ApplicationIcon>
+    </PropertyGroup>
+    <PropertyGroup>
+        <Title>Belarusian Music Releases Monitor</Title>
+        <Description>Мониторинг белорусских музыкальных релизов</Description>
+        <Product>BMRM</Product>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Prism.DryIoc" Version="8.1.97"/>
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Resources\favicon.ico" />
+      <Content Include="Resources\favicon.ico">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 </Project>
