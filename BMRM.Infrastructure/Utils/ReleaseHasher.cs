@@ -6,9 +6,9 @@ namespace BMRM.Infrastructure.Utils;
 
 public static class ReleaseHasher
 {
-    public static string GetId(string? artist, string? title, ReleaseType? type)
+    public static string GetId(string? artist, string? title)
     {
-        var normalized = $"{artist?.Trim().ToLowerInvariant()}|{title?.Trim().ToLowerInvariant()}|{type?.ToString()?.ToLowerInvariant()}";
+        var normalized = $"{artist?.Trim().ToLowerInvariant()}|{title?.Trim().ToLowerInvariant()}";
 
         using var md5 = MD5.Create();
         var hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(normalized));

@@ -1,9 +1,4 @@
-{
-  "ParsingPageUrl": "https://vk.com/wall-75669943?own=1",
-  "ConnectionStrings": {
-    "Default": "Data Source=BMRM.DB/BMRM.db",
-    "Hangfire": "Data Source=BMRM.DB/HangfireBMRM.db"
-  },
+﻿{
   "ReleasePatterns": {
     "Artist": "Выканаўц[аы]:\\s*(?:\\[[^\\[\\]\\|]+\\|)?([^\\]\\n]+)",
     "Title": "(?:Сінгл|Кліп|Відэа|Альбом|Live-album|Album|Сiнгл|Single|Клiп|EP|Вiдэа):\\s*([^\\n]+)",

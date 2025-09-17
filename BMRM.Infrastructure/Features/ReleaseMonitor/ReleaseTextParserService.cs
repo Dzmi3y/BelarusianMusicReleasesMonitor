@@ -46,7 +46,7 @@ public class ReleaseTextParserService(IOptions<ReleasePatternConfig> options) : 
             City = ExtractValue(input, _patterns.City),
             Type = type,
             CreatedAt = DateTime.Now,
-            Id = ReleaseHasher.GetId(artist, title, type)
+            Id = ReleaseHasher.GetId(artist, title)
         };
 
         return release;

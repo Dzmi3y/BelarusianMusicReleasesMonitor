@@ -7,14 +7,17 @@ using BMRM.Core.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.EntityFrameworkCore;
 using Hangfire;
 using Hangfire.Storage.SQLite;
 using BMRM.Infrastructure.Data;
 using BMRM.Core.Features.ReleaseMonitor;
+using BMRM.Core.Features.Spotify;
 using BMRM.Desktop.ViewModels;
 using BMRM.Infrastructure.Features.ReleaseMonitor;
 using BMRM.Desktop.Views;
+using BMRM.Infrastructure.Features.Spotify;
 using Prism.Events;
 using Prism.Mvvm;
 using Serilog;
@@ -53,7 +56,6 @@ namespace BMRM.Desktop
                 .ConfigureServices((context, services) =>
                 {
                     var configuration = context.Configuration;
-                    
                     services.Configure<ReleasePatternConfig>(configuration.GetSection("ReleasePatterns"));
                     services.AddHttpClient<IHtmlDownloaderService, HtmlDownloaderService>();
                     
@@ -62,22 +64,26 @@ namespace BMRM.Desktop
                     services.AddHangfire(config =>
                         config.UseSQLiteStorage(hangfirePath));
                     services.AddHangfireServer();
-
                  
                     var dbConnection = configuration.GetConnectionString("Default");
                     EnsureDirectoryExists(dbConnection);
                     services.AddDbContext<AppDbContext>(options =>
                         options.UseSqlite(dbConnection, x => x.MigrationsAssembly("BMRM.Infrastructure")));
-
-                   
+                    
                     services.AddSingleton<IReleaseMonitorJob, ReleaseMonitorJob>();
                     services.AddSingleton<IRecurringJobManager>(sp =>
                         new RecurringJobManager(sp.GetRequiredService<JobStorage>()));
                     services.AddSingleton<IRecurringJobService, RecurringJobService>();
+                    services.AddSingleton<IReleaseTextParserService, ReleaseTextParserService>();
+                    services.AddHttpClient<IHtmlDownloaderService, HtmlDownloaderService>();
+                    services.Configure<ReleasePatternConfig>(
+                        configuration.GetSection("ReleasePatterns"));
                     
+                    services.AddHttpClient<ISpotifyService,SpotifyService>(); 
+                    services.AddHttpClient<ISpotifyTokenService,SpotifyTokenService>(); 
+                    services.AddSingleton<SpotifyTokenStore>();
                     
                     services.AddSingleton<MainWindowViewModel>();
-                
                     services.AddSingleton<MainWindow>();
                 })
                 .Build();

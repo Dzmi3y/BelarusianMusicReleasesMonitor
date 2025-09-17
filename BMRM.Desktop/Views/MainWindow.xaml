@@ -64,6 +64,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <Button Command="{Binding UpdateCommand}"> Update</Button>
 
         <!-- <Button Command="{Binding Path=AddTrackCommand}">Add item</Button> -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
