@@ -1,4 +1,4 @@
-using BMRM.Core.Interfaces;
+using BMRM.Core.Features.ReleaseMonitor;
 
 namespace BMRM.Worker;
 

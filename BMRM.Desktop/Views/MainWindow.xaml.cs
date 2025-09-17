@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using BMRM.Desktop.ViewModels;
 
 namespace BMRM.Desktop.Views
 {
@@ -7,8 +8,9 @@ namespace BMRM.Desktop.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(MainWindowViewModel vm)
         {
+            DataContext = vm;
             InitializeComponent();
         }
     }

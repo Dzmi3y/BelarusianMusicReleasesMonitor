@@ -1,4 +1,4 @@
-﻿using BMRM.Core.Models;
+﻿using BMRM.Core.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BMRM.Infrastructure.Data;

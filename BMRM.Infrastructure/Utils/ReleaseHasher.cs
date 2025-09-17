@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using BMRM.Core.Enums;
+using BMRM.Core.Shared.Enums;
 
 namespace BMRM.Infrastructure.Utils;
 

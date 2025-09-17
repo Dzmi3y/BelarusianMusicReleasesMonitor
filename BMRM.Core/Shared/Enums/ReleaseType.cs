@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace BMRM.Core.Enums;
+namespace BMRM.Core.Shared.Enums;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ReleaseType

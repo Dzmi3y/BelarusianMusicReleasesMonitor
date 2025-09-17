@@ -7,6 +7,8 @@
         <UseWindowsForms>true</UseWindowsForms>
         <ApplicationIcon>Resources\favicon.ico</ApplicationIcon>
         <LangVersion>13</LangVersion>
+        <ApplicationDefinition>false</ApplicationDefinition>
+        <StartupObject>BMRM.Desktop.Program</StartupObject>
     </PropertyGroup>
     <PropertyGroup>
         <Title>Belarusian Music Releases Monitor</Title>
@@ -15,6 +17,8 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="DryIoc.dll" Version="5.4.3" />
+        <PackageReference Include="Hangfire" Version="1.8.21" />
+        <PackageReference Include="Hangfire.Storage.SQLite" Version="0.4.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
           <PrivateAssets>all</PrivateAssets>
@@ -24,8 +28,16 @@
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.9" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.9" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
         <PackageReference Include="Prism.Core" Version="9.0.537" />
         <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+        <PackageReference Include="Serilog" Version="4.2.0" />
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+        <PackageReference Include="Wpf.Extensions.Hosting" Version="1.2.0" />
     </ItemGroup>
     <ItemGroup>
       <None Remove="Resources\favicon.ico" />

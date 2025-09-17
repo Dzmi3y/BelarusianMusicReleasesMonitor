@@ -1,6 +1,6 @@
-﻿using BMRM.Core.Models;
+﻿using BMRM.Core.Shared.Models;
 
-namespace BMRM.Core.Interfaces;
+namespace BMRM.Core.Features.ReleaseMonitor;
 
 public interface IReleaseTextParserService
 {

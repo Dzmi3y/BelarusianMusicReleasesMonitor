@@ -1,11 +1,11 @@
-﻿using BMRM.Core.Interfaces;
-using BMRM.Core.Models;
+﻿using BMRM.Core.Features.ReleaseMonitor;
+using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace BMRM.Infrastructure.Services;
+namespace BMRM.Infrastructure.Features.ReleaseMonitor;
 
 public class ReleaseMonitorJob : IReleaseMonitorJob
 {

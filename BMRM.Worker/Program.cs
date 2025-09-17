@@ -1,7 +1,7 @@
 using BMRM.Core.Configuration;
-using BMRM.Core.Interfaces;
+using BMRM.Core.Features.ReleaseMonitor;
 using BMRM.Infrastructure.Data;
-using BMRM.Infrastructure.Services;
+using BMRM.Infrastructure.Features.ReleaseMonitor;
 using BMRM.Worker;
 using Hangfire;
 using Hangfire.Storage.SQLite;

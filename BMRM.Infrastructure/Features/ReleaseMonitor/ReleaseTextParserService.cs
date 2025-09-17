@@ -1,12 +1,12 @@
 ﻿using System.Text.RegularExpressions;
 using BMRM.Core.Configuration;
-using BMRM.Core.Enums;
-using BMRM.Core.Interfaces;
-using BMRM.Core.Models;
+using BMRM.Core.Features.ReleaseMonitor;
+using BMRM.Core.Shared.Enums;
+using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Utils;
 using Microsoft.Extensions.Options;
 
-namespace BMRM.Infrastructure.Services;
+namespace BMRM.Infrastructure.Features.ReleaseMonitor;
 
 public class ReleaseTextParserService(IOptions<ReleasePatternConfig> options) : IReleaseTextParserService
 {

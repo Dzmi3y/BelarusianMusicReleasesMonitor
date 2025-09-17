@@ -3,13 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
-        prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding Title}" Height="350" Width="525">
-    <b:Interaction.Triggers>
-        <b:EventTrigger EventName="Loaded">
-            <prism:InvokeCommandAction Command="{Binding InitCommand}" />
-        </b:EventTrigger>
-    </b:Interaction.Triggers>
     <Window.Resources>
         <LinearGradientBrush x:Key="MainBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#FF1E1E1E" Offset="0" />

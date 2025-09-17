@@ -1,4 +1,4 @@
-﻿namespace BMRM.Core.Interfaces;
+﻿namespace BMRM.Core.Features.ReleaseMonitor;
 
 public interface IReleaseMonitorJob
 {

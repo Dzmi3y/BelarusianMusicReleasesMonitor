@@ -1,9 +1,9 @@
 ﻿using System.IO.Compression;
 using System.Text;
-using BMRM.Core.Interfaces;
+using BMRM.Core.Features.ReleaseMonitor;
 using Microsoft.Extensions.Logging;
 
-namespace BMRM.Infrastructure.Services;
+namespace BMRM.Infrastructure.Features.ReleaseMonitor;
 
 public class HtmlDownloaderService(HttpClient httpClient, ILogger<HtmlDownloaderService> logger)
     : IHtmlDownloaderService

@@ -1,6 +1,6 @@
-﻿using BMRM.Core.Enums;
+﻿using BMRM.Core.Shared.Enums;
 
-namespace BMRM.Core.Models;
+namespace BMRM.Core.Shared.Models;
 
 public class Release
 {

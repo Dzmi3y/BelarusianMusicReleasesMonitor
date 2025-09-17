@@ -2,8 +2,10 @@
 using Prism.Mvvm;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
-using BMRM.Core.Models;
+using System.Windows.Threading;
+using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +13,11 @@ namespace BMRM.Desktop.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
+        private readonly ILogger<MainWindowViewModel> _logger;
         private AppDbContext _appDbContext;
         private string _title = "BMRM";
-        public ICommand AddTrackCommand { get; }
-        public ICommand InitCommand { get; }
-
+        public ICommand AddTrackCommand => new DelegateCommand(OnAddTrack);
+        
         public string Title
         {
             get { return _title; }
@@ -32,18 +34,23 @@ namespace BMRM.Desktop.ViewModels
 
         public ObservableCollection<Release> Tracks { get; } = new();
 
-        public MainWindowViewModel(AppDbContext appDbContext)
+        public MainWindowViewModel(AppDbContext appDbContext, ILogger<MainWindowViewModel> logger)
         {
+            _logger = logger;
             _appDbContext = appDbContext;
-            AddTrackCommand = new DelegateCommand(OnAddTrack);
-            InitCommand = new AsyncDelegateCommand(InitAsync);
+            _ = InitAsync().ContinueWith(t =>
+            {
+                if (t.Exception != null)
+                {
+                    _logger.LogError(t.Exception.Message);
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        public async Task InitAsync()
+        private async Task InitAsync()
         {
-            var trackList = await _appDbContext.Releases.AsNoTracking().ToListAsync();
-            foreach (var track in trackList)
-                Tracks.Add(track);
+             var trackList = await _appDbContext.Releases.AsNoTracking().ToListAsync();
+             Tracks.AddRange(trackList);
         }
 
         private void OnAddTrack()
