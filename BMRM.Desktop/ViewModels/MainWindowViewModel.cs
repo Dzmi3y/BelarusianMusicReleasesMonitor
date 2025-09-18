@@ -76,10 +76,11 @@ namespace BMRM.Desktop.ViewModels
             Tracks.Clear();
             try
             {
+                 
 
-               var res = await _spotifySearchService.FindReleaseAsync("axamit", "knight");
+               ///var res = await _spotifySearchService.FindReleaseAsync("Tehosekoitin", "Freak out");
 
-                // var res  =await _spotifyPlaylistsService.GetPlaylistReleasesAsync();
+                 var res  =await _spotifyPlaylistsService.GetPlaylistTracksAsync("1TafmgIyZEYPlqxoDXEhAb");
                 // foreach (var release in res.Items)
                 // {
                 //     Tracks.Add(new Release(){Artist = release.Track.Artists.FirstOrDefault()?.Name, Title = release.Track.Name, Id = ReleaseHasher.GetId(release.Track.Artists.FirstOrDefault()?.Name,release.Track.Name)});

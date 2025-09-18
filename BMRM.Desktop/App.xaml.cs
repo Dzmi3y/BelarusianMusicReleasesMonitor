@@ -81,7 +81,8 @@ namespace BMRM.Desktop
                     
                     services.AddHttpClient<ISpotifyPlaylistsService,SpotifyPlaylistsService>(); 
                     services.AddHttpClient<ISpotifyTokenService,SpotifyTokenService>(); 
-                    services.AddHttpClient<ISpotifySearchService,SpotifySearchService>(); 
+                    services.AddHttpClient<ISpotifySearchService,SpotifySearchService>();
+                    services.AddHttpClient<ISpotifyAlbumService, SpotifyAlbumService>();
                     services.AddSingleton<SpotifyTokenStore>();
                     
                     services.AddSingleton<MainWindowViewModel>();

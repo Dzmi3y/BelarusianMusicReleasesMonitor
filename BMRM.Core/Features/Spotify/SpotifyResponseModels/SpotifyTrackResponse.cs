@@ -1,6 +1,6 @@
 ﻿namespace BMRM.Core.Features.Spotify.SpotifyResponseModels;
 
-public class SpotifyPlaylistResponse
+public class SpotifyTrackResponse
 {
     public List<Item> Items { get; set; }
 }

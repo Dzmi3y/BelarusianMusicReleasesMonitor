@@ -10,7 +10,8 @@ public abstract class SpotifyBaseService
     protected readonly SpotifyTokenStore _spotifyTokenStore;
     protected readonly ISpotifyTokenService _spotifyTokenService;
 
-    protected SpotifyBaseService(HttpClient httpClient, ILogger logger, SpotifyTokenStore tokenStore, ISpotifyTokenService tokenService)
+    protected SpotifyBaseService(HttpClient httpClient, ILogger logger, SpotifyTokenStore tokenStore,
+        ISpotifyTokenService tokenService)
     {
         _httpClient = httpClient;
         _logger = logger;
