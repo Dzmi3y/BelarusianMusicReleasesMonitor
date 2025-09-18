@@ -17,7 +17,7 @@ namespace BMRM.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
 
-            modelBuilder.Entity("BMRM.Core.Models.Release", b =>
+            modelBuilder.Entity("BMRM.Core.Shared.Models.Release", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -34,7 +34,14 @@ namespace BMRM.Infrastructure.Migrations
                     b.Property<string>("Genres")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("ProcessingStatus")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime?>("ReleaseDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SpotifyAlbumId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Title")

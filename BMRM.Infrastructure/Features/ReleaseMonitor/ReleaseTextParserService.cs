@@ -41,6 +41,7 @@ public class ReleaseTextParserService(IOptions<ReleasePatternConfig> options) : 
         {
             Artist = artist,
             Title = title,
+            ProcessingStatus = ProcessingStatus.New,
             ReleaseDate = ParseDate(ExtractValue(input, _patterns.ReleaseDate)),
             Genres = ExtractValue(input, _patterns.Genres),
             City = ExtractValue(input, _patterns.City),

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
         Title="{Binding Title}" Height="350" Width="525">
     <Window.Resources>
         <LinearGradientBrush x:Key="MainBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
@@ -46,6 +47,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Title}" Foreground="#E0E0E0" FontSize="14" Margin="0,0,10,0" />
                                 <TextBlock Text="{Binding Artist}" Foreground="#9E9E9E" FontSize="13" />
+                                <!-- <wpf:ChromiumWebBrowser Width="300" Height="200" Address="https://open.spotify.com/embed/track/64Zwdfwkz8USZUw5zocZpt?theme=0" /> -->
                             </StackPanel>
                         </Border>
                         <DataTemplate.Triggers>
@@ -70,5 +72,10 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Tracks}" Style="{StaticResource TrackItemTemplate}" />
         </ScrollViewer>
+        
+        <Grid Grid.Row="2">
+            
+
+        </Grid>
     </Grid>
 </Window>

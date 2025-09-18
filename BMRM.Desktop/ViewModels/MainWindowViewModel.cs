@@ -2,6 +2,7 @@
 using Prism.Commands;
 using Prism.Mvvm;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,6 +12,7 @@ using BMRM.Core.Features.ReleaseMonitor;
 using BMRM.Core.Features.Spotify;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
+using BMRM.Infrastructure.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace BMRM.Desktop.ViewModels
@@ -21,7 +23,8 @@ namespace BMRM.Desktop.ViewModels
         private AppDbContext _appDbContext;
         private string _title = "BMRM";
         private IReleaseMonitorJob _releaseMonitorJob;
-        private readonly ISpotifyService _spotifyService;
+        private readonly ISpotifyPlaylistsService _spotifyPlaylistsService;
+        private readonly ISpotifySearchService  _spotifySearchService;
         public ICommand UpdateCommand {get;}
         
         public string Title
@@ -40,12 +43,15 @@ namespace BMRM.Desktop.ViewModels
 
         public ObservableCollection<Release> Tracks { get; } = new();
 
-        public MainWindowViewModel(AppDbContext appDbContext, ILogger<MainWindowViewModel> logger, IReleaseMonitorJob  releaseMonitorJob,ISpotifyService  spotifyService)
+        public MainWindowViewModel(AppDbContext appDbContext, ILogger<MainWindowViewModel> logger,
+            IReleaseMonitorJob  releaseMonitorJob,ISpotifyPlaylistsService  spotifyPlaylistsService, 
+            ISpotifySearchService  spotifySearchService)
         {
             _logger = logger;
             _appDbContext = appDbContext;
             _releaseMonitorJob =  releaseMonitorJob;
-            _spotifyService = spotifyService;
+            _spotifyPlaylistsService = spotifyPlaylistsService;
+            _spotifySearchService = spotifySearchService;
             UpdateCommand = new DelegateCommand( () => _ = UpdateAsync());
             
             _ = InitAsync().ContinueWith(t =>
@@ -67,10 +73,18 @@ namespace BMRM.Desktop.ViewModels
         {
             
             var cts = new CancellationTokenSource();
-
+            Tracks.Clear();
             try
             {
-                await _spotifyService.GetPlaylistReleasesAsync();
+
+               var res = await _spotifySearchService.FindReleaseAsync("axamit", "knight");
+
+                // var res  =await _spotifyPlaylistsService.GetPlaylistReleasesAsync();
+                // foreach (var release in res.Items)
+                // {
+                //     Tracks.Add(new Release(){Artist = release.Track.Artists.FirstOrDefault()?.Name, Title = release.Track.Name, Id = ReleaseHasher.GetId(release.Track.Artists.FirstOrDefault()?.Name,release.Track.Name)});
+                // }
+
                 // await _releaseMonitorJob.ParseAndSaveAsync(cts.Token);
                 //await InitAsync();
             }

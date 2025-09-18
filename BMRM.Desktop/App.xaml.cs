@@ -79,8 +79,9 @@ namespace BMRM.Desktop
                     services.Configure<ReleasePatternConfig>(
                         configuration.GetSection("ReleasePatterns"));
                     
-                    services.AddHttpClient<ISpotifyService,SpotifyService>(); 
+                    services.AddHttpClient<ISpotifyPlaylistsService,SpotifyPlaylistsService>(); 
                     services.AddHttpClient<ISpotifyTokenService,SpotifyTokenService>(); 
+                    services.AddHttpClient<ISpotifySearchService,SpotifySearchService>(); 
                     services.AddSingleton<SpotifyTokenStore>();
                     
                     services.AddSingleton<MainWindowViewModel>();
