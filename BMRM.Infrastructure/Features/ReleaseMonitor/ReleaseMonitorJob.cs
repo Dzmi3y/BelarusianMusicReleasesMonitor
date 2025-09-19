@@ -1,4 +1,5 @@
 ﻿using BMRM.Core.Features.ReleaseMonitor;
+using BMRM.Core.Features.Spotify;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -29,10 +30,9 @@ public class ReleaseMonitorJob : IReleaseMonitorJob
         _configuration = configuration;
     }
 
-    
+
     public async Task ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        
         _logger.LogInformation("ReleaseMonitorJob started at: {time}", DateTimeOffset.Now);
         var random = new Random();
         var delayMinutes = random.Next(0, 360);
@@ -44,12 +44,15 @@ public class ReleaseMonitorJob : IReleaseMonitorJob
 
     public async Task ParseAndSaveAsync(CancellationToken cancellationToken)
     {
-        
         try
         {
             var url = _configuration["ParsingPageUrl"];
             using var reader = await _downloader.GetHtmlStreamReaderAsync(url, cancellationToken);
             var newReleases = new List<Release>();
+
+            var knownIds = new HashSet<string>(
+                await _db.Releases.Select(r => r.Id).ToListAsync(cancellationToken)
+            );
 
             while (!reader.EndOfStream)
             {
@@ -58,11 +61,13 @@ public class ReleaseMonitorJob : IReleaseMonitorJob
 
                 if (release is null) continue;
 
-                bool exists = await _db.Releases.AnyAsync(r => r.Id == release.Id, cancellationToken);
-                if (!exists)
+                if (knownIds.Add(release.Id))
                 {
                     newReleases.Add(release);
                 }
+
+                if (newReleases.Count > 3) //////// test
+                    break;
             }
 
             if (newReleases.Count > 0)

@@ -25,7 +25,9 @@ namespace BMRM.Desktop.ViewModels
         private IReleaseMonitorJob _releaseMonitorJob;
         private readonly ISpotifyPlaylistsService _spotifyPlaylistsService;
         private readonly ISpotifySearchService  _spotifySearchService;
+        private readonly IReleaseSpotifyLinkerService _releaseSpotifyLinkerService;
         public ICommand UpdateCommand {get;}
+        public ICommand LinkedReleasesCommand {get;}
         
         public string Title
         {
@@ -45,14 +47,16 @@ namespace BMRM.Desktop.ViewModels
 
         public MainWindowViewModel(AppDbContext appDbContext, ILogger<MainWindowViewModel> logger,
             IReleaseMonitorJob  releaseMonitorJob,ISpotifyPlaylistsService  spotifyPlaylistsService, 
-            ISpotifySearchService  spotifySearchService)
+            ISpotifySearchService  spotifySearchService, IReleaseSpotifyLinkerService releaseSpotifyLinkerService)
         {
             _logger = logger;
             _appDbContext = appDbContext;
             _releaseMonitorJob =  releaseMonitorJob;
             _spotifyPlaylistsService = spotifyPlaylistsService;
             _spotifySearchService = spotifySearchService;
+            _releaseSpotifyLinkerService = releaseSpotifyLinkerService;
             UpdateCommand = new DelegateCommand( () => _ = UpdateAsync());
+            LinkedReleasesCommand = new DelegateCommand( () => _ = LinkedReleasesAsync());
             
             _ = InitAsync().ContinueWith(t =>
             {
@@ -65,10 +69,24 @@ namespace BMRM.Desktop.ViewModels
 
         private async Task InitAsync()
         {
-             var trackList = await _appDbContext.Releases.AsNoTracking().ToListAsync();
-             Tracks.Clear();
-             Tracks.AddRange(trackList);
+            try
+            {
+                var trackList = await _appDbContext.Releases.AsNoTracking().ToListAsync();
+                Tracks.Clear();
+                Tracks.AddRange(trackList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
         }
+
+        private async Task LinkedReleasesAsync()
+        {
+            await _releaseSpotifyLinkerService.LinkReleasesToSpotifyAsync();
+            await InitAsync();
+        }
+        
         private async Task UpdateAsync()
         {
             
@@ -80,14 +98,14 @@ namespace BMRM.Desktop.ViewModels
 
                ///var res = await _spotifySearchService.FindReleaseAsync("Tehosekoitin", "Freak out");
 
-                 var res  =await _spotifyPlaylistsService.GetPlaylistTracksAsync("1TafmgIyZEYPlqxoDXEhAb");
+                // var res  =await _spotifyPlaylistsService.GetPlaylistTracksAsync("1TafmgIyZEYPlqxoDXEhAb");
                 // foreach (var release in res.Items)
                 // {
                 //     Tracks.Add(new Release(){Artist = release.Track.Artists.FirstOrDefault()?.Name, Title = release.Track.Name, Id = ReleaseHasher.GetId(release.Track.Artists.FirstOrDefault()?.Name,release.Track.Name)});
                 // }
 
-                // await _releaseMonitorJob.ParseAndSaveAsync(cts.Token);
-                //await InitAsync();
+                 await _releaseMonitorJob.ParseAndSaveAsync(cts.Token);
+                await InitAsync();
             }
             catch (OperationCanceledException)
             {

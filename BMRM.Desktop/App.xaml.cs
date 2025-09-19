@@ -34,8 +34,8 @@ namespace BMRM.Desktop
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning) 
-                .MinimumLevel.Override("Hangfire", LogEventLevel.Warning) 
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
                 .Filter.ByExcluding(logEvent =>
                     logEvent.MessageTemplate.Text.Contains("Removing outdated records") ||
                     logEvent.MessageTemplate.Text.Contains("Server") ||
@@ -43,9 +43,9 @@ namespace BMRM.Desktop
                 .WriteTo.Console()
                 .WriteTo.File("logs/bmrm-log-.txt",
                     rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 7) 
+                    retainedFileCountLimit: 7)
                 .CreateLogger();
-            
+
             _host = Host.CreateDefaultBuilder()
                 .UseSerilog()
                 .ConfigureAppConfiguration(config =>
@@ -57,34 +57,36 @@ namespace BMRM.Desktop
                 {
                     var configuration = context.Configuration;
                     services.Configure<ReleasePatternConfig>(configuration.GetSection("ReleasePatterns"));
-                    services.AddHttpClient<IHtmlDownloaderService, HtmlDownloaderService>();
-                    
+
                     var hangfireConnection = configuration.GetConnectionString("Hangfire");
                     var hangfirePath = EnsureDirectoryExists(hangfireConnection);
                     services.AddHangfire(config =>
                         config.UseSQLiteStorage(hangfirePath));
                     services.AddHangfireServer();
-                 
+
                     var dbConnection = configuration.GetConnectionString("Default");
                     EnsureDirectoryExists(dbConnection);
                     services.AddDbContext<AppDbContext>(options =>
-                        options.UseSqlite(dbConnection, x => x.MigrationsAssembly("BMRM.Infrastructure")));
-                    
-                    services.AddSingleton<IReleaseMonitorJob, ReleaseMonitorJob>();
-                    services.AddSingleton<IRecurringJobManager>(sp =>
+                        options
+                            .UseSqlite(dbConnection, x => x.MigrationsAssembly("BMRM.Infrastructure"))
+                            .UseLazyLoadingProxies());
+
+                    services.AddScoped<IReleaseMonitorJob, ReleaseMonitorJob>();
+                    services.AddScoped<IRecurringJobManager>(sp =>
                         new RecurringJobManager(sp.GetRequiredService<JobStorage>()));
-                    services.AddSingleton<IRecurringJobService, RecurringJobService>();
-                    services.AddSingleton<IReleaseTextParserService, ReleaseTextParserService>();
+                    services.AddScoped<IRecurringJobService, RecurringJobService>();
+                    services.AddScoped<IReleaseTextParserService, ReleaseTextParserService>();
                     services.AddHttpClient<IHtmlDownloaderService, HtmlDownloaderService>();
                     services.Configure<ReleasePatternConfig>(
                         configuration.GetSection("ReleasePatterns"));
-                    
-                    services.AddHttpClient<ISpotifyPlaylistsService,SpotifyPlaylistsService>(); 
-                    services.AddHttpClient<ISpotifyTokenService,SpotifyTokenService>(); 
-                    services.AddHttpClient<ISpotifySearchService,SpotifySearchService>();
+
+                    services.AddHttpClient<ISpotifyPlaylistsService, SpotifyPlaylistsService>();
+                    services.AddHttpClient<ISpotifyTokenService, SpotifyTokenService>();
+                    services.AddHttpClient<ISpotifySearchService, SpotifySearchService>();
                     services.AddHttpClient<ISpotifyAlbumService, SpotifyAlbumService>();
+                    services.AddScoped<IReleaseSpotifyLinkerService, ReleaseSpotifyLinkerService>();
                     services.AddSingleton<SpotifyTokenStore>();
-                    
+
                     services.AddSingleton<MainWindowViewModel>();
                     services.AddSingleton<MainWindow>();
                 })
@@ -94,7 +96,7 @@ namespace BMRM.Desktop
         protected override void OnStartup(StartupEventArgs e)
         {
             _host.Start();
-            
+
             ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
 
 

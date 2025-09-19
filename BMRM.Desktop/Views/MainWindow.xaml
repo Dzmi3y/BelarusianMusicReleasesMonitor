@@ -5,6 +5,7 @@
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
         xmlns:shell="clr-namespace:BMRM.Desktop.Views.Shell"
+        xmlns:utils="clr-namespace:BMRM.Desktop.Utils"
         Title="{Binding Title}"
         Height="350" Width="525"
         WindowStyle="None"
@@ -13,6 +14,7 @@
         ResizeMode="CanResizeWithGrip">
 
     <Window.Resources>
+        <utils:EnumDisplayConverter x:Key="EnumDisplayConverter" />
         <LinearGradientBrush x:Key="MainBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#FF1E1E1E" Offset="0" />
             <GradientStop Color="#FF3B1F00" Offset="1" />
@@ -53,10 +55,45 @@
                                 CornerRadius="4"
                                 Margin="4"
                                 Padding="8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Title}" Foreground="#E0E0E0" FontSize="14" Margin="0,0,10,0" />
-                                <TextBlock Text="{Binding Artist}" Foreground="#9E9E9E" FontSize="13" />
-                            </StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="{Binding Artist}" Foreground="#E0E0E0" FontSize="14" />
+                                <TextBlock Grid.Column="1" Text="{Binding Type, Converter={StaticResource EnumDisplayConverter}}" Foreground="#9E9E9E" FontSize="13" />
+                                <TextBlock Grid.Column="2" Text="{Binding Title}" Foreground="#9E9E9E" FontSize="13" />
+                                <TextBlock Grid.Column="3"
+                                           Text="{Binding ProcessingStatus, Converter={StaticResource EnumDisplayConverter}}"
+                                           FontSize="13">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#9E9E9E" />
+
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ProcessingStatus}" Value="New">
+                                                    <Setter Property="Foreground" Value="Orange" />    
+                                                </DataTrigger>
+
+                                                <DataTrigger Binding="{Binding ProcessingStatus}" Value="FoundOnSpotify">
+                                                    <Setter Property="Foreground" Value="Green" />
+                                                </DataTrigger>
+
+                                                <DataTrigger Binding="{Binding ProcessingStatus}" Value="NotFoundOnSpotify">
+                                                    <Setter Property="Foreground" Value="Red" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Grid.Column="4" Text="{Binding Genres}" Foreground="#9E9E9E" FontSize="13" />
+                                <TextBlock Grid.Column="5" Text="{Binding City}" Foreground="#9E9E9E" FontSize="13" />
+                            </Grid>
                         </Border>
                         <DataTemplate.Triggers>
                             <Trigger SourceName="ItemBorder" Property="IsMouseOver" Value="True">
@@ -77,9 +114,16 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-
-                <Button Command="{Binding UpdateCommand}" Content="Update" Margin="10"/>
-
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button Grid.Column="0" Command="{Binding UpdateCommand}" Content="Update" Margin="10"/>
+                    <Button Grid.Column="1" Command="{Binding LinkedReleasesCommand}" Content="Linked Releases" Margin="10"/>
+                   
+            </Grid>
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Tracks}" Style="{StaticResource TrackItemTemplate}" />
                 </ScrollViewer>

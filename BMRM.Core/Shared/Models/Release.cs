@@ -5,7 +5,7 @@ namespace BMRM.Core.Shared.Models;
 public class Release
 {
     public string Id { get; set; }
-    public string SpotifyAlbumId { get; set; }
+    public string? SpotifyAlbumId { get; set; }
     public ProcessingStatus  ProcessingStatus { get; set; }
     public string? Artist { get; set; }
     public string? Title { get; set; }
@@ -14,4 +14,6 @@ public class Release
     public string? City { get; set; }
     public DateTime? ReleaseDate { get; set; }
     public DateTime CreatedAt { get; set; }
+    
+    public virtual List<SpotifyTrack>? Tracks { get; set; }
 }

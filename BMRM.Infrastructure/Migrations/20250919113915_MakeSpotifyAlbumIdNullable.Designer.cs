@@ -3,6 +3,7 @@ using System;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BMRM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250919113915_MakeSpotifyAlbumIdNullable")]
+    partial class MakeSpotifyAlbumIdNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -52,42 +55,6 @@ namespace BMRM.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Releases");
-                });
-
-            modelBuilder.Entity("BMRM.Core.Shared.Models.SpotifyTrack", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReleaseId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReleaseId");
-
-                    b.ToTable("SpotifyTracks");
-                });
-
-            modelBuilder.Entity("BMRM.Core.Shared.Models.SpotifyTrack", b =>
-                {
-                    b.HasOne("BMRM.Core.Shared.Models.Release", "Release")
-                        .WithMany("Tracks")
-                        .HasForeignKey("ReleaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Release");
-                });
-
-            modelBuilder.Entity("BMRM.Core.Shared.Models.Release", b =>
-                {
-                    b.Navigation("Tracks");
                 });
 #pragma warning restore 612, 618
         }

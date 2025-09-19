@@ -2,5 +2,5 @@
 
 public class SpotifyTrackResponse
 {
-    public List<Item> Items { get; set; }
+    public List<Track> Items { get; set; }
 }
