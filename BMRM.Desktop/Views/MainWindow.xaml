@@ -4,12 +4,20 @@
         xmlns:prism="http://prismlibrary.com/"
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
-        Title="{Binding Title}" Height="350" Width="525">
+        xmlns:shell="clr-namespace:BMRM.Desktop.Views.Shell"
+        Title="{Binding Title}"
+        Height="350" Width="525"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResizeWithGrip">
+
     <Window.Resources>
         <LinearGradientBrush x:Key="MainBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#FF1E1E1E" Offset="0" />
             <GradientStop Color="#FF3B1F00" Offset="1" />
         </LinearGradientBrush>
+
         <Style TargetType="Button">
             <Setter Property="Background" Value="#FF6F00" />
             <Setter Property="Foreground" Value="White" />
@@ -28,6 +36,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
         <Style TargetType="ListBox">
             <Setter Property="Background" Value="#2C2C2C" />
             <Setter Property="Foreground" Value="#E0E0E0" />
@@ -47,7 +56,6 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Title}" Foreground="#E0E0E0" FontSize="14" Margin="0,0,10,0" />
                                 <TextBlock Text="{Binding Artist}" Foreground="#9E9E9E" FontSize="13" />
-                                <!-- <wpf:ChromiumWebBrowser Width="300" Height="200" Address="https://open.spotify.com/embed/track/64Zwdfwkz8USZUw5zocZpt?theme=0" /> -->
                             </StackPanel>
                         </Border>
                         <DataTemplate.Triggers>
@@ -61,21 +69,25 @@
         </Style>
     </Window.Resources>
 
-    <Grid Background="{StaticResource MainBackgroundBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Button Command="{Binding UpdateCommand}"> Update</Button>
 
-        <!-- <Button Command="{Binding Path=AddTrackCommand}">Add item</Button> -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Tracks}" Style="{StaticResource TrackItemTemplate}" />
-        </ScrollViewer>
-        
-        <Grid Grid.Row="2">
-            
+    <shell:ShellControl Title="{Binding Title}" >
+        <shell:ShellControl.Content>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-        </Grid>
-    </Grid>
+                <Button Command="{Binding UpdateCommand}" Content="Update" Margin="10"/>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Tracks}" Style="{StaticResource TrackItemTemplate}" />
+                </ScrollViewer>
+
+                <Grid Grid.Row="2">
+    
+                </Grid>
+            </Grid>
+        </shell:ShellControl.Content>
+    </shell:ShellControl>
 </Window>
