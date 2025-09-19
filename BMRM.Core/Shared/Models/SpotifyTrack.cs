@@ -7,4 +7,7 @@ public class SpotifyTrack
 
     public string ReleaseId { get; set; }
     public virtual Release Release { get; set; }
+    
+    
+    public virtual List<PlaylistTrack>? Playlists { get; set; }
 }

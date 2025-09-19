@@ -1,0 +1,89 @@
+﻿using BMRM.Core.Features.Spotify;
+using BMRM.Core.Features.Spotify.SpotifyResponseModels;
+using BMRM.Core.Shared.Models;
+using BMRM.Infrastructure.Data;
+using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace BMRM.Infrastructure.Features.Spotify;
+
+public class BelReleasePlaylistUpdaterService: IBelReleasePlaylistUpdaterService
+{
+    private readonly int _maxCount = 50;
+    private readonly string _playlistId = "6fYIUA7NivMPlxvhDVFqXH";
+    private readonly AppDbContext _db;
+    private readonly ISpotifyPlaylistsService _spotifyPlaylistsService;
+    private readonly ILogger<BelReleasePlaylistUpdaterService> _logger;
+
+    public BelReleasePlaylistUpdaterService(AppDbContext db, ISpotifyPlaylistsService spotifyPlaylistsService,
+        ILogger<BelReleasePlaylistUpdaterService> logger)
+    {
+        _db = db;
+        _spotifyPlaylistsService = spotifyPlaylistsService;
+        _logger = logger;
+    }
+
+    public async Task UpdateBelReleasePlaylistAsync()
+    {
+        try
+        {
+            var playlist = await _spotifyPlaylistsService.GetPlaylistTracksAsync(_playlistId);
+            if (playlist == null)
+                return;
+
+            var existingTrackIds = playlist.Tracks.Items
+                .Select(item => item.Track.Id)
+                .ToHashSet();
+
+            var candidateTrackIds = await _db.SpotifyTracks
+                .Where(t => t.Playlists != null && !t.Playlists.Any(p => p.Id == _playlistId))
+                .Where(t => !existingTrackIds.Contains(t.Id))
+                .Select(t => t.Id)
+                .ToListAsync();
+
+            var totalAfterInsert = playlist.TotalTracks + candidateTrackIds.Count;
+            await CleanupPlaylistAsync(totalAfterInsert, playlist);
+
+            await _spotifyPlaylistsService.AddPlaylistTracksAsync(_playlistId, candidateTrackIds);
+
+            var playlistTrackLinks = candidateTrackIds.Select(trackId => new PlaylistTrack
+            {
+                Id = _playlistId,
+                SpotifyTrackId = trackId
+            });
+
+            await _db.BulkInsertAsync(playlistTrackLinks);
+            await _db.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating Belarusian release playlist");
+        }
+    }
+
+    private async Task CleanupPlaylistAsync(int totalAfterInsert, SpotifyPlaylistItemsResponse playlist)
+    {
+        if (totalAfterInsert > _maxCount)
+        {
+            var excessCount = totalAfterInsert - _maxCount;
+
+            var trackIdsToRemove = playlist.Tracks.Items
+                .TakeLast(excessCount)
+                .Select(t => t.Track.Id)
+                .ToList();
+
+            await _spotifyPlaylistsService.DeletePlaylistTracksAsync(
+                _playlistId,
+                trackIdsToRemove,
+                playlist.SnapshotId
+            );
+
+            var dbTracksToRemove = await _db.SpotifyTracks
+                .Where(t => trackIdsToRemove.Contains(t.Id))
+                .ToListAsync();
+
+            await _db.BulkDeleteAsync(dbTracksToRemove);
+        }
+    }
+}

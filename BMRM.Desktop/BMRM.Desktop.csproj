@@ -17,6 +17,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CefSharp.Wpf.NETCore" Version="139.0.280" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageReference Include="DryIoc.dll" Version="5.4.3" />
         <PackageReference Include="EFCore.BulkExtensions" Version="9.0.1" />
         <PackageReference Include="EFCore.BulkExtensions.Sqlite" Version="9.0.1" />

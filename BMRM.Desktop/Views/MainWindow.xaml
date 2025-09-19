@@ -7,7 +7,7 @@
         xmlns:shell="clr-namespace:BMRM.Desktop.Views.Shell"
         xmlns:utils="clr-namespace:BMRM.Desktop.Utils"
         Title="{Binding Title}"
-        Height="350" Width="525"
+        Height="600" Width="800"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -31,7 +31,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                        <Border Height="30" Background="{TemplateBinding Background}" CornerRadius="4">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                     </ControlTemplate>
@@ -55,7 +55,12 @@
                                 CornerRadius="4"
                                 Margin="4"
                                 Padding="8">
-                            <Grid>
+                           <Grid>
+                               <Grid.RowDefinitions>
+                                   <RowDefinition  Height="Auto"/>
+                                   <RowDefinition  Height="Auto"/>
+                               </Grid.RowDefinitions>
+                               <Grid Height="40">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
@@ -94,12 +99,28 @@
                                 <TextBlock Grid.Column="4" Text="{Binding Genres}" Foreground="#9E9E9E" FontSize="13" />
                                 <TextBlock Grid.Column="5" Text="{Binding City}" Foreground="#9E9E9E" FontSize="13" />
                             </Grid>
+                            <ItemsControl Grid.Row="1" ItemsSource="{Binding Tracks}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                       <Grid x:Name="AlbumItem">
+                                           <Grid.ColumnDefinitions>
+                                               <ColumnDefinition Width="*"/>
+                                           </Grid.ColumnDefinitions>
+                                           <TextBlock Grid.Column="4" Text="{Binding Name}" Foreground="#9E9E9E" FontSize="13" />
+                                           <wpf:ChromiumWebBrowser Width="300" Height="200">
+                                               <wpf:ChromiumWebBrowser.Address>
+                                                   <MultiBinding StringFormat="https://open.spotify.com/embed/track/{0}?theme=0">
+                                                       <Binding Path="Id" />
+                                                   </MultiBinding>
+                                               </wpf:ChromiumWebBrowser.Address>
+                                           </wpf:ChromiumWebBrowser>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            </Grid>
                         </Border>
-                        <DataTemplate.Triggers>
-                            <Trigger SourceName="ItemBorder" Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="#BF360C" />
-                            </Trigger>
-                        </DataTemplate.Triggers>
+                       
                     </DataTemplate>
                 </Setter.Value>
             </Setter>
@@ -127,10 +148,6 @@
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Tracks}" Style="{StaticResource TrackItemTemplate}" />
                 </ScrollViewer>
-
-                <Grid Grid.Row="2">
-    
-                </Grid>
             </Grid>
         </shell:ShellControl.Content>
     </shell:ShellControl>

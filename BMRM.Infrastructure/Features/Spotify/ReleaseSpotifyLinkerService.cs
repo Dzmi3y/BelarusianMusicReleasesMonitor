@@ -4,6 +4,7 @@ using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 
 namespace BMRM.Infrastructure.Features.Spotify;
@@ -13,13 +14,15 @@ public class ReleaseSpotifyLinkerService:IReleaseSpotifyLinkerService
     private readonly AppDbContext _db;
     private readonly ISpotifyAlbumService _spotifyAlbumService;
     private readonly ISpotifySearchService _spotifySearchService;
+    private readonly ILogger<ReleaseSpotifyLinkerService> _logger;
 
     public ReleaseSpotifyLinkerService(AppDbContext db, ISpotifyAlbumService spotifyAlbumService,
-        ISpotifySearchService spotifySearchService)
+        ISpotifySearchService spotifySearchService, ILogger<ReleaseSpotifyLinkerService> logger)
     {
         _db = db;
         _spotifyAlbumService = spotifyAlbumService;
         _spotifySearchService = spotifySearchService;
+        _logger = logger;
     }
 
     public async Task LinkReleasesToSpotifyAsync()
@@ -60,7 +63,7 @@ public class ReleaseSpotifyLinkerService:IReleaseSpotifyLinkerService
         }
         catch (Exception ex)
         {
-            
+            _logger.LogError(ex, "Error while linking releases");
         }
     }
 }

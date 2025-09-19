@@ -85,6 +85,7 @@ namespace BMRM.Desktop
                     services.AddHttpClient<ISpotifySearchService, SpotifySearchService>();
                     services.AddHttpClient<ISpotifyAlbumService, SpotifyAlbumService>();
                     services.AddScoped<IReleaseSpotifyLinkerService, ReleaseSpotifyLinkerService>();
+                    services.AddScoped<IBelReleasePlaylistUpdaterService, BelReleasePlaylistUpdaterService>();
                     services.AddSingleton<SpotifyTokenStore>();
 
                     services.AddSingleton<MainWindowViewModel>();
