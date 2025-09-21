@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using BMRM.Core.Configuration;
+using BMRM.Core.Features.Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Hangfire;
 using Hangfire.Storage.SQLite;
@@ -13,6 +14,7 @@ using BMRM.Core.Features.Spotify;
 using BMRM.Desktop.ViewModels;
 using BMRM.Infrastructure.Features.ReleaseMonitor;
 using BMRM.Desktop.Views;
+using BMRM.Infrastructure.Features.Hangfire;
 using BMRM.Infrastructure.Features.Spotify;
 using Prism.Events;
 using Prism.Mvvm;
@@ -67,6 +69,8 @@ namespace BMRM.Desktop
                             .UseSqlite(dbConnection, x => x.MigrationsAssembly("BMRM.Infrastructure"))
                             .UseLazyLoadingProxies());
 
+                    services.AddScoped<IHangfireJobManager, HangfireJobManager>();
+
                     services.AddScoped<IReleaseMonitorJob, ReleaseMonitorJob>();
                     services.AddScoped<IRecurringJobManager>(sp =>
                         new RecurringJobManager(sp.GetRequiredService<JobStorage>()));
@@ -100,15 +104,15 @@ namespace BMRM.Desktop
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             MainWindow = mainWindow;
             MainWindow.Show();
-            
+
             MainWindow.Closing += (s, args) =>
             {
                 args.Cancel = true;
                 MainWindow.Hide();
-                _notifyIcon.ShowBalloonTip(1000, "Minimized", 
+                _notifyIcon.ShowBalloonTip(1000, "Minimized",
                     "The application is running in the background", ToolTipIcon.Info);
             };
-            
+
             InitializeTrayIcon();
         }
 
