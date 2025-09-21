@@ -24,11 +24,14 @@ namespace BMRM.Desktop.ViewModels
         private string _title = "BMRM";
         private IReleaseMonitorJob _releaseMonitorJob;
         private readonly ISpotifyPlaylistsService _spotifyPlaylistsService;
-        private readonly ISpotifySearchService  _spotifySearchService;
+        private readonly ISpotifySearchService _spotifySearchService;
         private readonly IReleaseSpotifyLinkerService _releaseSpotifyLinkerService;
-        public ICommand UpdateCommand {get;}
-        public ICommand LinkedReleasesCommand {get;}
-        
+        private readonly IBelReleasePlaylistUpdaterService _belReleasePlaylistUpdaterService;
+        public ICommand UpdateCommand { get; }
+        public ICommand LinkedReleasesCommand { get; }
+
+        public ICommand UpdatePlaylistCommand { get; }
+
         public string Title
         {
             get { return _title; }
@@ -46,18 +49,22 @@ namespace BMRM.Desktop.ViewModels
         public ObservableCollection<Release> Tracks { get; } = new();
 
         public MainWindowViewModel(AppDbContext appDbContext, ILogger<MainWindowViewModel> logger,
-            IReleaseMonitorJob  releaseMonitorJob,ISpotifyPlaylistsService  spotifyPlaylistsService, 
-            ISpotifySearchService  spotifySearchService, IReleaseSpotifyLinkerService releaseSpotifyLinkerService)
+            IReleaseMonitorJob releaseMonitorJob, ISpotifyPlaylistsService spotifyPlaylistsService,
+            ISpotifySearchService spotifySearchService, IReleaseSpotifyLinkerService releaseSpotifyLinkerService,
+            IBelReleasePlaylistUpdaterService belReleasePlaylistUpdaterService)
         {
             _logger = logger;
             _appDbContext = appDbContext;
-            _releaseMonitorJob =  releaseMonitorJob;
+            _releaseMonitorJob = releaseMonitorJob;
             _spotifyPlaylistsService = spotifyPlaylistsService;
             _spotifySearchService = spotifySearchService;
             _releaseSpotifyLinkerService = releaseSpotifyLinkerService;
-            UpdateCommand = new DelegateCommand( () => _ = UpdateAsync());
-            LinkedReleasesCommand = new DelegateCommand( () => _ = LinkedReleasesAsync());
+            _belReleasePlaylistUpdaterService = belReleasePlaylistUpdaterService;
             
+            UpdateCommand = new DelegateCommand(() => _ = UpdateAsync());
+            LinkedReleasesCommand = new DelegateCommand(() => _ = LinkedReleasesAsync());
+            UpdatePlaylistCommand = new DelegateCommand(() => _ = UpdatePlaylistAsync());
+
             _ = InitAsync().ContinueWith(t =>
             {
                 if (t.Exception != null)
@@ -86,25 +93,14 @@ namespace BMRM.Desktop.ViewModels
             await _releaseSpotifyLinkerService.LinkReleasesToSpotifyAsync();
             await InitAsync();
         }
-        
+
         private async Task UpdateAsync()
         {
-            
             var cts = new CancellationTokenSource();
             Tracks.Clear();
             try
             {
-                 
-
-               ///var res = await _spotifySearchService.FindReleaseAsync("Tehosekoitin", "Freak out");
-
-                // var res  =await _spotifyPlaylistsService.GetPlaylistTracksAsync("1TafmgIyZEYPlqxoDXEhAb");
-                // foreach (var release in res.Items)
-                // {
-                //     Tracks.Add(new Release(){Artist = release.Track.Artists.FirstOrDefault()?.Name, Title = release.Track.Name, Id = ReleaseHasher.GetId(release.Track.Artists.FirstOrDefault()?.Name,release.Track.Name)});
-                // }
-
-                 await _releaseMonitorJob.ParseAndSaveAsync(cts.Token);
+                await _releaseMonitorJob.ParseAndSaveAsync(cts.Token);
                 await InitAsync();
             }
             catch (OperationCanceledException)
@@ -115,9 +111,11 @@ namespace BMRM.Desktop.ViewModels
             {
                 _logger.LogError(ex, "Ошибка при обновлении");
             }
-
-            
         }
 
+        private async Task UpdatePlaylistAsync()
+        {
+           await _belReleasePlaylistUpdaterService.UpdateBelReleasePlaylistAsync();
+        }
     }
 }

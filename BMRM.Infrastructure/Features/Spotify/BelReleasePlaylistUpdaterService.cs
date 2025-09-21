@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace BMRM.Infrastructure.Features.Spotify;
 
-public class BelReleasePlaylistUpdaterService: IBelReleasePlaylistUpdaterService
+public class BelReleasePlaylistUpdaterService : IBelReleasePlaylistUpdaterService
 {
-    private readonly int _maxCount = 50;
+    private readonly int _maxCount = 11;
     private readonly string _playlistId = "6fYIUA7NivMPlxvhDVFqXH";
     private readonly AppDbContext _db;
     private readonly ISpotifyPlaylistsService _spotifyPlaylistsService;
@@ -37,7 +37,8 @@ public class BelReleasePlaylistUpdaterService: IBelReleasePlaylistUpdaterService
                 .ToHashSet();
 
             var candidateTrackIds = await _db.SpotifyTracks
-                .Where(t => t.Playlists != null && !t.Playlists.Any(p => p.Id == _playlistId))
+                .Where(t => t.Playlists != null && !t.Playlists.Any(p => p.SpotifyPlaylistId == _playlistId))
+                .Where(t => t.Playlists != null && !t.Playlists.Any(p => p.SpotifyPlaylistId == _playlistId))
                 .Where(t => !existingTrackIds.Contains(t.Id))
                 .Select(t => t.Id)
                 .ToListAsync();
@@ -49,7 +50,8 @@ public class BelReleasePlaylistUpdaterService: IBelReleasePlaylistUpdaterService
 
             var playlistTrackLinks = candidateTrackIds.Select(trackId => new PlaylistTrack
             {
-                Id = _playlistId,
+                Id = Guid.NewGuid(),
+                SpotifyPlaylistId = _playlistId,
                 SpotifyTrackId = trackId
             });
 
@@ -84,6 +86,17 @@ public class BelReleasePlaylistUpdaterService: IBelReleasePlaylistUpdaterService
                 .ToListAsync();
 
             await _db.BulkDeleteAsync(dbTracksToRemove);
+            await _db.SaveChangesAsync();
+
+            var orphanedReleases = await _db.Releases
+                .Where(r => !r.Tracks.Any())
+                .ToListAsync();
+
+            if (orphanedReleases.Any())
+            {
+                await _db.BulkDeleteAsync(orphanedReleases);
+                await _db.SaveChangesAsync();
+            }
         }
     }
 }

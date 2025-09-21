@@ -2,8 +2,8 @@
 
 public class PlaylistTrack
 {
-    public string Id { get; set; }
-
+    public Guid Id { get; set; }
+    public  string SpotifyPlaylistId { get; set; }
     public string SpotifyTrackId { get; set; }
     public virtual SpotifyTrack SpotifyTrack { get; set; }
 }

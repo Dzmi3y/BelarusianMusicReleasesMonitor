@@ -81,12 +81,12 @@ namespace BMRM.Desktop
                         configuration.GetSection("ReleasePatterns"));
 
                     services.AddHttpClient<ISpotifyPlaylistsService, SpotifyPlaylistsService>();
-                    services.AddHttpClient<ISpotifyTokenService, SpotifyTokenService>();
+                    services.AddHttpClient<ISpotifySimpleTokenService, SpotifySimpleTokenService>();
                     services.AddHttpClient<ISpotifySearchService, SpotifySearchService>();
                     services.AddHttpClient<ISpotifyAlbumService, SpotifyAlbumService>();
                     services.AddScoped<IReleaseSpotifyLinkerService, ReleaseSpotifyLinkerService>();
                     services.AddScoped<IBelReleasePlaylistUpdaterService, BelReleasePlaylistUpdaterService>();
-                    services.AddSingleton<SpotifyTokenStore>();
+                    services.AddScoped<ISpotifyCodeFlowTokenService, SpotifyCodeFlowTokenService>();
 
                     services.AddSingleton<MainWindowViewModel>();
                     services.AddSingleton<MainWindow>();

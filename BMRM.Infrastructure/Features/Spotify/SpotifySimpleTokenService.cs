@@ -1,30 +1,34 @@
 ﻿using System.Text.Json;
 using BMRM.Core.Features.Spotify;
+using BMRM.Core.Features.Spotify.SpotifyResponseModels;
+using BMRM.Core.Shared.Enums;
+using BMRM.Core.Shared.Models;
+using BMRM.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
 
 namespace BMRM.Infrastructure.Features.Spotify;
 
-public class SpotifyTokenService: ISpotifyTokenService
+public class SpotifySimpleTokenService : ISpotifySimpleTokenService
 {
     private const string TokenUrl = "https://accounts.spotify.com/api/token";
 
-    private readonly ILogger<SpotifyTokenService> _logger;
+    private readonly ILogger<SpotifySimpleTokenService> _logger;
     private readonly HttpClient _httpClient;
-    private readonly SpotifyTokenStore _spotifyTokenStore;
     private readonly string _clientId;
     private readonly string _clientSecret;
+    private readonly AppDbContext _db;
 
-    public SpotifyTokenService(HttpClient httpClient, ILogger<SpotifyTokenService> logger, SpotifyTokenStore tokenStore)
+    public SpotifySimpleTokenService(HttpClient httpClient, ILogger<SpotifySimpleTokenService> logger, AppDbContext db)
     {
         _httpClient = httpClient;
         _logger = logger;
-        _spotifyTokenStore = tokenStore;
 
         _clientId = GetRequiredEnv("spotify_client_id");
         _clientSecret = GetRequiredEnv("spotify_client_secret");
+        _db = db;
     }
 
-    public async Task UpdateBearerTokenAsync()
+    public async Task<Token?> UpdateTokenAsync()
     {
         var request = BuildTokenRequest();
 
@@ -34,9 +38,35 @@ public class SpotifyTokenService: ISpotifyTokenService
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            var token = ExtractAccessToken(json);
+            var tokenResponse = JsonSerializer.Deserialize<SpotifySimpleTokenResponse>(json);
 
-            _spotifyTokenStore.BearerToken = token;
+            if (tokenResponse != null)
+            {
+                var dbToken = _db.Tokens.FirstOrDefault(t => t.Type == TokenType.Simple);
+                if (dbToken != null)
+                {
+                    dbToken.AccessToken = tokenResponse.AccessToken;
+                    dbToken.ExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn);
+                    dbToken.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    dbToken = new Token()
+                    {
+                        Id = Guid.NewGuid(),
+                        Type = TokenType.Simple,
+                        AccessToken = tokenResponse.AccessToken,
+                        RefreshToken = null,
+                        ExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn),
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    _db.Tokens.Add(dbToken);
+                }
+
+                await _db.SaveChangesAsync();
+                return dbToken;
+            }
+            return null;
         }
         catch (Exception ex)
         {
@@ -58,13 +88,6 @@ public class SpotifyTokenService: ISpotifyTokenService
         {
             Content = new FormUrlEncodedContent(formData)
         };
-    }
-
-    private static string ExtractAccessToken(string json)
-    {
-        using var doc = JsonDocument.Parse(json);
-        return doc.RootElement.GetProperty("access_token").GetString()
-               ?? throw new InvalidOperationException("access_token not found in response");
     }
 
     private static string GetRequiredEnv(string key)

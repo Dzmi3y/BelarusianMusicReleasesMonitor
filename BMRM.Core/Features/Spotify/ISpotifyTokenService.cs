@@ -1,6 +1,8 @@
-﻿namespace BMRM.Core.Features.Spotify;
+﻿using BMRM.Core.Shared.Models;
+
+namespace BMRM.Core.Features.Spotify;
 
 public interface ISpotifyTokenService
 {
-    Task UpdateBearerTokenAsync();
+    Task<Token?> UpdateTokenAsync();
 }

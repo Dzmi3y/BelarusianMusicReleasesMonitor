@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using BMRM.Core.Features.Spotify;
 using BMRM.Core.Features.Spotify.SpotifyResponseModels;
+using BMRM.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -14,8 +15,8 @@ public class SpotifyPlaylistsService : SpotifyBaseService, ISpotifyPlaylistsServ
     private const string PlaylistTracksUrlTemplate = "https://api.spotify.com/v1/playlists/{0}/tracks";
 
     public SpotifyPlaylistsService(HttpClient httpClient, ILogger<SpotifyPlaylistsService> logger,
-        SpotifyTokenStore tokenStore, ISpotifyTokenService tokenService)
-        : base(httpClient, logger, tokenStore, tokenService)
+        ISpotifySimpleTokenService simpleTokenService, ISpotifyCodeFlowTokenService spotifyCodeFlowTokenService, AppDbContext db)
+        : base(httpClient, logger, simpleTokenService, spotifyCodeFlowTokenService, db,true)
     {
     }
 

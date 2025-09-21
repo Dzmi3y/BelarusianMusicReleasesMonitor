@@ -9,15 +9,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SpotifyTrack> SpotifyTracks => Set<SpotifyTrack>();
     
     public DbSet<PlaylistTrack> Playlists => Set<PlaylistTrack>();
+    public DbSet<Token> Tokens => Set<Token>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Release>()
-            .HasKey(r => r.Id);
-
-        modelBuilder.Entity<SpotifyTrack>()
-            .HasKey(t => t.Id);
-
         modelBuilder.Entity<Release>()
             .HasMany(r => r.Tracks)
             .WithOne(t => t.Release)
