@@ -5,31 +5,67 @@ using System.Windows;
 using System.Windows.Forms;
 using BMRM.Core.Configuration;
 using BMRM.Core.Features.Hangfire;
-using Microsoft.EntityFrameworkCore;
-using Hangfire;
-using Hangfire.Storage.SQLite;
-using BMRM.Infrastructure.Data;
 using BMRM.Core.Features.ReleaseMonitor;
 using BMRM.Core.Features.Spotify;
 using BMRM.Desktop.ViewModels;
-using BMRM.Infrastructure.Features.ReleaseMonitor;
 using BMRM.Desktop.Views;
+using BMRM.Infrastructure.Data;
 using BMRM.Infrastructure.Features.Hangfire;
+using BMRM.Infrastructure.Features.ReleaseMonitor;
 using BMRM.Infrastructure.Features.Spotify;
-using Prism.Events;
-using Prism.Mvvm;
+using DryIoc;
+using Hangfire;
+using Hangfire.Storage.SQLite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Prism.Container.DryIoc;
+using Prism.DryIoc;
+using Prism.Ioc;
+using Prism.Modularity;
+using Prism.Navigation.Regions;
 using Serilog;
 using Serilog.Events;
-using Application = System.Windows.Application;
 
 namespace BMRM.Desktop
 {
-    public partial class App : Application
+    public partial class App : PrismApplication
     {
-        private readonly IHost _host;
+        private NotifyIcon _notifyIcon;
 
-        public App()
+        protected override Window CreateShell()
         {
+            return Container.Resolve<MainWindow>();
+        }
+
+        protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+        {
+            moduleCatalog.AddModule<DesktopModule>();
+        }
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+
+            var regionManager = Container.Resolve<IRegionManager>();
+            regionManager.RequestNavigate("MainRegion", nameof(NewReleasesView));
+
+            InitializeTrayIcon();
+
+            MainWindow.Closing += (s, args) =>
+            {
+                args.Cancel = true;
+                MainWindow.Hide();
+                _notifyIcon.ShowBalloonTip(1000, "Minimized",
+                    "The application is running in the background", ToolTipIcon.Info);
+            };
+        }
+
+        protected override void RegisterTypes(IContainerRegistry containerRegistry)
+        {
+            // Навигация
+            containerRegistry.RegisterForNavigation<NewReleasesView, NewReleasesViewModel>();
+
+            // Serilog
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -39,81 +75,49 @@ namespace BMRM.Desktop
                     logEvent.MessageTemplate.Text.Contains("Server") ||
                     logEvent.MessageTemplate.Text.Contains("Executed DbCommand"))
                 .WriteTo.Console()
-                .WriteTo.File("logs/bmrm-log-.txt",
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 7)
+                .WriteTo.File("logs/bmrm-log-.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
-
-            _host = Host.CreateDefaultBuilder()
-                .UseSerilog()
-                .ConfigureAppConfiguration(config =>
-                {
-                    config.SetBasePath(AppContext.BaseDirectory);
-                    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-                })
-                .ConfigureServices((context, services) =>
-                {
-                    var configuration = context.Configuration;
-                    services.Configure<ReleasePatternConfig>(configuration.GetSection("ReleasePatterns"));
-
-                    var hangfireConnection = configuration.GetConnectionString("Hangfire");
-                    var hangfirePath = EnsureDirectoryExists(hangfireConnection);
-                    services.AddHangfire(config =>
-                        config.UseSQLiteStorage(hangfirePath));
-                    services.AddHangfireServer();
-
-                    var dbConnection = configuration.GetConnectionString("Default");
-                    EnsureDirectoryExists(dbConnection);
-                    services.AddDbContext<AppDbContext>(options =>
-                        options
-                            .UseSqlite(dbConnection, x => x.MigrationsAssembly("BMRM.Infrastructure"))
-                            .UseLazyLoadingProxies());
-
-                    services.AddScoped<IHangfireJobManager, HangfireJobManager>();
-
-                    services.AddScoped<IReleaseMonitorJob, ReleaseMonitorJob>();
-                    services.AddScoped<IRecurringJobManager>(sp =>
-                        new RecurringJobManager(sp.GetRequiredService<JobStorage>()));
-                    services.AddScoped<IRecurringJobService, RecurringJobService>();
-                    services.AddScoped<IReleaseTextParserService, ReleaseTextParserService>();
-                    services.AddHttpClient<IHtmlDownloaderService, HtmlDownloaderService>();
-                    services.Configure<ReleasePatternConfig>(
-                        configuration.GetSection("ReleasePatterns"));
-
-                    services.AddHttpClient<ISpotifyPlaylistsService, SpotifyPlaylistsService>();
-                    services.AddHttpClient<ISpotifySimpleTokenService, SpotifySimpleTokenService>();
-                    services.AddHttpClient<ISpotifySearchService, SpotifySearchService>();
-                    services.AddHttpClient<ISpotifyAlbumService, SpotifyAlbumService>();
-                    services.AddScoped<IReleaseSpotifyLinkerService, ReleaseSpotifyLinkerService>();
-                    services.AddScoped<IBelReleasePlaylistUpdaterService, BelReleasePlaylistUpdaterService>();
-                    services.AddScoped<ISpotifyCodeFlowTokenService, SpotifyCodeFlowTokenService>();
-
-                    services.AddSingleton<MainWindowViewModel>();
-                    services.AddSingleton<MainWindow>();
-                })
+            
+            
+            // Configuration
+            var config = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
-        }
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            _host.Start();
+            containerRegistry.RegisterInstance<IConfiguration>(config);
+            
 
-            ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
+            var releasePatternConfig = config.GetSection("ReleasePatterns").Get<ReleasePatternConfig>();
+            containerRegistry.RegisterInstance<IOptions<ReleasePatternConfig>>(
+                Options.Create(releasePatternConfig));
+            
+            var hangfireConnection = config.GetConnectionString("Hangfire");
+            var hangfirePath = EnsureDirectoryExists(hangfireConnection);
+            GlobalConfiguration.Configuration.UseSQLiteStorage(hangfirePath);
+            containerRegistry.RegisterInstance(JobStorage.Current);
+            containerRegistry.RegisterSingleton<IHangfireJobManager, HangfireJobManager>();
+            containerRegistry.RegisterSingleton<IRecurringJobManager>(() => new RecurringJobManager(JobStorage.Current));
+            containerRegistry.RegisterSingleton<IRecurringJobService, RecurringJobService>();
 
+            var dbConnection = config.GetConnectionString("Default");
+            EnsureDirectoryExists(dbConnection);
+            containerRegistry.Register<AppDbContext>(() =>
+                new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+                    .UseSqlite(dbConnection, x => x.MigrationsAssembly("BMRM.Infrastructure"))
+                    .UseLazyLoadingProxies()
+                    .Options));
 
-            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-            MainWindow = mainWindow;
-            MainWindow.Show();
-
-            MainWindow.Closing += (s, args) =>
-            {
-                args.Cancel = true;
-                MainWindow.Hide();
-                _notifyIcon.ShowBalloonTip(1000, "Minimized",
-                    "The application is running in the background", ToolTipIcon.Info);
-            };
-
-            InitializeTrayIcon();
+            containerRegistry.RegisterSingleton<IReleaseMonitorJob, ReleaseMonitorJob>();
+            containerRegistry.RegisterSingleton<IReleaseTextParserService, ReleaseTextParserService>();
+            containerRegistry.RegisterSingleton<IHtmlDownloaderService, HtmlDownloaderService>();
+            containerRegistry.RegisterSingleton<ISpotifyPlaylistsService, SpotifyPlaylistsService>();
+            containerRegistry.RegisterSingleton<ISpotifySimpleTokenService, SpotifySimpleTokenService>();
+            containerRegistry.RegisterSingleton<ISpotifySearchService, SpotifySearchService>();
+            containerRegistry.RegisterSingleton<ISpotifyAlbumService, SpotifyAlbumService>();
+            containerRegistry.RegisterSingleton<IReleaseSpotifyLinkerService, ReleaseSpotifyLinkerService>();
+            containerRegistry.RegisterSingleton<IBelReleasePlaylistUpdaterService, BelReleasePlaylistUpdaterService>();
+            containerRegistry.RegisterSingleton<ISpotifyCodeFlowTokenService, SpotifyCodeFlowTokenService>();
         }
 
         private string EnsureDirectoryExists(string connectionString)
@@ -126,8 +130,6 @@ namespace BMRM.Desktop
                 Directory.CreateDirectory(directory);
             return dbPath;
         }
-
-        private NotifyIcon _notifyIcon;
 
         private void InitializeTrayIcon()
         {

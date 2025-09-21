@@ -8,6 +8,7 @@ using BMRM.Core.Shared.Enums;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace BMRM.Infrastructure.Features.Spotify;
 
@@ -16,7 +17,6 @@ public class SpotifyCodeFlowTokenService : ISpotifyCodeFlowTokenService
     private readonly string _clientId;
     private readonly string _clientSecret;
     private readonly string _redirectUri = "http://localhost/";
-    private readonly ILogger<SpotifyCodeFlowTokenService> _logger;
     private readonly AppDbContext _db;
 
     private readonly string[] _scopes = new[]
@@ -25,11 +25,10 @@ public class SpotifyCodeFlowTokenService : ISpotifyCodeFlowTokenService
         "playlist-modify-private"
     };
 
-    public SpotifyCodeFlowTokenService(ILogger<SpotifyCodeFlowTokenService> logger, AppDbContext db)
+    public SpotifyCodeFlowTokenService(AppDbContext db)
     {
         _clientId = GetRequiredEnv("spotify_client_id");
         _clientSecret = GetRequiredEnv("spotify_client_secret");
-        _logger = logger;
         _db = db;
     }
 
@@ -95,7 +94,7 @@ public class SpotifyCodeFlowTokenService : ISpotifyCodeFlowTokenService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exchanging token");
+            Log.Logger.Error(ex, "Error exchanging token");
             return null;
         }
     }
@@ -126,7 +125,7 @@ public class SpotifyCodeFlowTokenService : ISpotifyCodeFlowTokenService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error refreshing token");
+            Log.Logger.Error(ex, "Error refreshing token");
             return await AuthorizeAsync();
         }
     }

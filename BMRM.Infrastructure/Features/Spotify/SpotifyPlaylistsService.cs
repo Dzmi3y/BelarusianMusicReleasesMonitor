@@ -14,9 +14,9 @@ public class SpotifyPlaylistsService : SpotifyBaseService, ISpotifyPlaylistsServ
 
     private const string PlaylistTracksUrlTemplate = "https://api.spotify.com/v1/playlists/{0}/tracks";
 
-    public SpotifyPlaylistsService(HttpClient httpClient, ILogger<SpotifyPlaylistsService> logger,
-        ISpotifySimpleTokenService simpleTokenService, ISpotifyCodeFlowTokenService spotifyCodeFlowTokenService, AppDbContext db)
-        : base(httpClient, logger, simpleTokenService, spotifyCodeFlowTokenService, db,true)
+    public SpotifyPlaylistsService(HttpClient httpClient, ISpotifySimpleTokenService simpleTokenService,
+        ISpotifyCodeFlowTokenService spotifyCodeFlowTokenService, AppDbContext db)
+        : base(httpClient, simpleTokenService, spotifyCodeFlowTokenService, db, true)
     {
     }
 

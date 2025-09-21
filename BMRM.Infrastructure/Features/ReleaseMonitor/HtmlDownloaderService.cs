@@ -2,10 +2,11 @@
 using System.Text;
 using BMRM.Core.Features.ReleaseMonitor;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace BMRM.Infrastructure.Features.ReleaseMonitor;
 
-public class HtmlDownloaderService(HttpClient httpClient, ILogger<HtmlDownloaderService> logger)
+public class HtmlDownloaderService(HttpClient httpClient)
     : IHtmlDownloaderService
 {
     static HtmlDownloaderService()
@@ -33,7 +34,7 @@ public class HtmlDownloaderService(HttpClient httpClient, ILogger<HtmlDownloader
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Failed to resolve encoding: {Charset}", charset);
+                Log.Logger.Error(ex, "Failed to resolve encoding: {Charset}", charset);
                 encoding = Encoding.GetEncoding("windows-1251");
             }
 
@@ -48,7 +49,7 @@ public class HtmlDownloaderService(HttpClient httpClient, ILogger<HtmlDownloader
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to download HTML from {Url}", url);
+            Log.Logger.Error(ex, "Failed to download HTML from {Url}", url);
             throw;
         }
     }

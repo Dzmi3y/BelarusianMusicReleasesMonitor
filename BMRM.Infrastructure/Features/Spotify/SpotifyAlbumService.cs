@@ -9,9 +9,9 @@ public class SpotifyAlbumService : SpotifyBaseService, ISpotifyAlbumService
 {
     private const string UrlTemplate = "https://api.spotify.com/v1/albums/{0}/tracks?limit=20&offset=0";
 
-    public SpotifyAlbumService(HttpClient httpClient, ILogger<SpotifySearchService> logger,
-        ISpotifySimpleTokenService simpleTokenService, ISpotifyCodeFlowTokenService spotifyCodeFlowTokenService, AppDbContext db)
-        : base(httpClient, logger, simpleTokenService, spotifyCodeFlowTokenService, db)
+    public SpotifyAlbumService(HttpClient httpClient, ISpotifySimpleTokenService simpleTokenService,
+        ISpotifyCodeFlowTokenService spotifyCodeFlowTokenService, AppDbContext db)
+        : base(httpClient, simpleTokenService, spotifyCodeFlowTokenService, db)
     {
     }
 

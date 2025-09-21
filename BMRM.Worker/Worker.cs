@@ -1,15 +1,14 @@
 using BMRM.Core.Features.ReleaseMonitor;
+using Serilog;
 
 namespace BMRM.Worker;
 
 public class Worker : BackgroundService
 {
-    private readonly ILogger<Worker> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory)
+    public Worker(IServiceScopeFactory scopeFactory)
     {
-        _logger = logger;
         _scopeFactory = scopeFactory;
     }
 
@@ -18,7 +17,7 @@ public class Worker : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var job = scope.ServiceProvider.GetRequiredService<IReleaseMonitorJob>();
 
-        _logger.LogInformation("Worker triggered at: {time}", DateTimeOffset.Now);
+        Log.Logger.Information("Worker triggered at: {time}", DateTimeOffset.Now);
         await job.ExecuteAsync(stoppingToken);
     }
 }

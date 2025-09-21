@@ -5,24 +5,22 @@ using BMRM.Core.Shared.Enums;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace BMRM.Infrastructure.Features.Spotify;
 
 public class SpotifySimpleTokenService : ISpotifySimpleTokenService
 {
     private const string TokenUrl = "https://accounts.spotify.com/api/token";
-
-    private readonly ILogger<SpotifySimpleTokenService> _logger;
+    
     private readonly HttpClient _httpClient;
     private readonly string _clientId;
     private readonly string _clientSecret;
     private readonly AppDbContext _db;
 
-    public SpotifySimpleTokenService(HttpClient httpClient, ILogger<SpotifySimpleTokenService> logger, AppDbContext db)
+    public SpotifySimpleTokenService(HttpClient httpClient, AppDbContext db)
     {
         _httpClient = httpClient;
-        _logger = logger;
-
         _clientId = GetRequiredEnv("spotify_client_id");
         _clientSecret = GetRequiredEnv("spotify_client_secret");
         _db = db;
@@ -66,11 +64,12 @@ public class SpotifySimpleTokenService : ISpotifySimpleTokenService
                 await _db.SaveChangesAsync();
                 return dbToken;
             }
+
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error receiving Spotify token");
+            Log.Logger.Error(ex, "Error receiving Spotify token");
             throw;
         }
     }

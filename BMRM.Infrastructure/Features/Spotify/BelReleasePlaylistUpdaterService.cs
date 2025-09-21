@@ -5,6 +5,7 @@ using BMRM.Infrastructure.Data;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace BMRM.Infrastructure.Features.Spotify;
 
@@ -14,14 +15,11 @@ public class BelReleasePlaylistUpdaterService : IBelReleasePlaylistUpdaterServic
     private readonly string _playlistId = "6fYIUA7NivMPlxvhDVFqXH";
     private readonly AppDbContext _db;
     private readonly ISpotifyPlaylistsService _spotifyPlaylistsService;
-    private readonly ILogger<BelReleasePlaylistUpdaterService> _logger;
 
-    public BelReleasePlaylistUpdaterService(AppDbContext db, ISpotifyPlaylistsService spotifyPlaylistsService,
-        ILogger<BelReleasePlaylistUpdaterService> logger)
+    public BelReleasePlaylistUpdaterService(AppDbContext db, ISpotifyPlaylistsService spotifyPlaylistsService)
     {
         _db = db;
         _spotifyPlaylistsService = spotifyPlaylistsService;
-        _logger = logger;
     }
 
     public async Task UpdateBelReleasePlaylistAsync()
@@ -60,7 +58,7 @@ public class BelReleasePlaylistUpdaterService : IBelReleasePlaylistUpdaterServic
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating Belarusian release playlist");
+             Log.Logger.Error(ex, "Error updating Belarusian release playlist");
         }
     }
 

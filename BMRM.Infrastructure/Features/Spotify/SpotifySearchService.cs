@@ -9,9 +9,9 @@ public class SpotifySearchService : SpotifyBaseService, ISpotifySearchService
 {
     private const string UrlTemplate = "https://api.spotify.com/v1/search?q={0}&type=album&limit=1&offset=0";
 
-    public SpotifySearchService(HttpClient httpClient, ILogger<SpotifySearchService> logger,
-        ISpotifySimpleTokenService simpleTokenService, ISpotifyCodeFlowTokenService spotifyCodeFlowTokenService,AppDbContext db)
-        : base(httpClient, logger, simpleTokenService, spotifyCodeFlowTokenService,db)
+    public SpotifySearchService(HttpClient httpClient, ISpotifySimpleTokenService simpleTokenService,
+        ISpotifyCodeFlowTokenService spotifyCodeFlowTokenService, AppDbContext db)
+        : base(httpClient, simpleTokenService, spotifyCodeFlowTokenService, db)
     {
     }
 

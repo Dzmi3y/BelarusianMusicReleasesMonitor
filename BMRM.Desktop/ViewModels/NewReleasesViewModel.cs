@@ -10,12 +10,12 @@ using BMRM.Core.Features.Spotify;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace BMRM.Desktop.ViewModels
 {
-    public class MainWindowViewModel : BindableBase
+    public class NewReleasesViewModel : BindableBase
     {
-        private readonly ILogger<MainWindowViewModel> _logger;
         private AppDbContext _appDbContext;
         private string _title = "BMRM";
         private IReleaseMonitorJob _releaseMonitorJob;
@@ -44,28 +44,28 @@ namespace BMRM.Desktop.ViewModels
 
         public ObservableCollection<Release> Tracks { get; } = new();
 
-        public MainWindowViewModel(AppDbContext appDbContext, ILogger<MainWindowViewModel> logger,
-            IReleaseMonitorJob releaseMonitorJob, ISpotifyPlaylistsService spotifyPlaylistsService,
+        public NewReleasesViewModel(AppDbContext appDbContext, IReleaseMonitorJob releaseMonitorJob , ISpotifyPlaylistsService spotifyPlaylistsService,
             ISpotifySearchService spotifySearchService, IReleaseSpotifyLinkerService releaseSpotifyLinkerService,
             IBelReleasePlaylistUpdaterService belReleasePlaylistUpdaterService)
         {
-            _logger = logger;
             _appDbContext = appDbContext;
             _releaseMonitorJob = releaseMonitorJob;
             _spotifyPlaylistsService = spotifyPlaylistsService;
             _spotifySearchService = spotifySearchService;
             _releaseSpotifyLinkerService = releaseSpotifyLinkerService;
             _belReleasePlaylistUpdaterService = belReleasePlaylistUpdaterService;
-            
+
             UpdateCommand = new DelegateCommand(() => _ = UpdateAsync());
             LinkedReleasesCommand = new DelegateCommand(() => _ = LinkedReleasesAsync());
             UpdatePlaylistCommand = new DelegateCommand(() => _ = UpdatePlaylistAsync());
-
+            
             _ = InitAsync().ContinueWith(t =>
             {
                 if (t.Exception != null)
                 {
-                    _logger.LogError(t.Exception.Message);
+                    Log.Logger.Error(t.Exception.Message);
+            
+                     Log.Logger.Error(t.Exception.Message);
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
@@ -80,7 +80,7 @@ namespace BMRM.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                Log.Logger.Error(ex.Message);
             }
         }
 
@@ -101,17 +101,17 @@ namespace BMRM.Desktop.ViewModels
             }
             catch (OperationCanceledException)
             {
-                _logger.LogInformation("Operation cancelled by user");
+                Log.Logger.Information("Operation cancelled by user");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during update");
+                Log.Logger.Error(ex, "Error during update");
             }
         }
 
         private async Task UpdatePlaylistAsync()
         {
-           await _belReleasePlaylistUpdaterService.UpdateBelReleasePlaylistAsync();
+            await _belReleasePlaylistUpdaterService.UpdateBelReleasePlaylistAsync();
         }
     }
 }

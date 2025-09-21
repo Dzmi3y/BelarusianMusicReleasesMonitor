@@ -1,29 +1,25 @@
 ﻿using BMRM.Core.Features.ReleaseMonitor;
-using BMRM.Core.Features.Spotify;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace BMRM.Infrastructure.Features.ReleaseMonitor;
 
 public class ReleaseMonitorJob : IReleaseMonitorJob
 {
-    private readonly ILogger<ReleaseMonitorJob> _logger;
     private readonly IReleaseTextParserService _parser;
     private readonly IHtmlDownloaderService _downloader;
     private readonly AppDbContext _db;
     private readonly IConfiguration _configuration;
 
     public ReleaseMonitorJob(
-        ILogger<ReleaseMonitorJob> logger,
         IReleaseTextParserService parser,
         IHtmlDownloaderService downloader,
         AppDbContext db,
         IConfiguration configuration)
     {
-        _logger = logger;
         _parser = parser;
         _downloader = downloader;
         _db = db;
@@ -33,10 +29,10 @@ public class ReleaseMonitorJob : IReleaseMonitorJob
 
     public async Task ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("ReleaseMonitorJob started at: {time}", DateTimeOffset.Now);
+        Log.Logger.Information("ReleaseMonitorJob started at: {time}", DateTimeOffset.Now);
         var random = new Random();
         var delayMinutes = random.Next(0, 360);
-        _logger.LogInformation("ReleaseMonitorJob wait for: {time}", TimeSpan.FromMinutes(delayMinutes));
+        Log.Logger.Information("ReleaseMonitorJob wait for: {time}", TimeSpan.FromMinutes(delayMinutes));
         await Task.Delay(TimeSpan.FromMinutes(delayMinutes), cancellationToken);
 
         await ParseAndSaveAsync(cancellationToken);
@@ -76,15 +72,15 @@ public class ReleaseMonitorJob : IReleaseMonitorJob
                 await _db.SaveChangesAsync(cancellationToken);
             }
 
-            _logger.LogInformation("Saved {Count} new releases", newReleases.Count);
+            Log.Logger.Information("Saved {Count} new releases", newReleases.Count);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to load or process HTML");
+             Log.Logger.Error(ex, "Failed to load or process HTML");
         }
         finally
         {
-            _logger.LogInformation("ReleaseMonitorJob finished at: {time}", DateTimeOffset.Now);
+            Log.Logger.Information("ReleaseMonitorJob finished at: {time}", DateTimeOffset.Now);
         }
     }
 }

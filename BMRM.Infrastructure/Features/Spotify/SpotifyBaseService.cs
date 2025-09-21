@@ -6,11 +6,11 @@ using BMRM.Core.Shared.Enums;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 public abstract class SpotifyBaseService
 {
     protected readonly HttpClient _httpClient;
-    protected readonly ILogger _logger;
     protected readonly ISpotifySimpleTokenService _spotifySimpleTokenService;
     protected readonly ISpotifyCodeFlowTokenService _spotifyCodeFlowTokenService;
     protected readonly bool _useAuthorizationCodeFlow;
@@ -18,12 +18,11 @@ public abstract class SpotifyBaseService
     protected readonly ISpotifyTokenService _tokenService;
     private readonly AppDbContext _db;
 
-    protected SpotifyBaseService(HttpClient httpClient, ILogger logger,
+    protected SpotifyBaseService(HttpClient httpClient,
         ISpotifySimpleTokenService simpleTokenService, ISpotifyCodeFlowTokenService spotifyCodeFlowTokenService,
         AppDbContext db, bool useAuthorizationCodeFlow = false)
     {
         _httpClient = httpClient;
-        _logger = logger;
         _spotifySimpleTokenService = simpleTokenService;
         _spotifyCodeFlowTokenService = spotifyCodeFlowTokenService;
         _db = db;
@@ -52,9 +51,8 @@ public abstract class SpotifyBaseService
             var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
-            { 
-                _logger.LogWarning("Access token expired. Attempting to refresh...");
-                var newToken =  await _tokenService.UpdateTokenAsync();
+            {
+                var newToken = await _tokenService.UpdateTokenAsync();
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", newToken.AccessToken);
                 response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             }
@@ -68,7 +66,7 @@ public abstract class SpotifyBaseService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Spotify API request failed");
+            Log.Logger.Error(ex, "Spotify API request failed");
             throw;
         }
     }
