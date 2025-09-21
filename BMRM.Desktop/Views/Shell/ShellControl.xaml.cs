@@ -67,7 +67,7 @@ namespace BMRM.Desktop.Views.Shell
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             var window = Window.GetWindow(this);
-            window?.Close();
+            window?.Hide();
         }
     }
 }

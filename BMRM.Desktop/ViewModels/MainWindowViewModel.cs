@@ -2,17 +2,13 @@
 using Prism.Commands;
 using Prism.Mvvm;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 using BMRM.Core.Features.ReleaseMonitor;
 using BMRM.Core.Features.Spotify;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
-using BMRM.Infrastructure.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace BMRM.Desktop.ViewModels
@@ -105,11 +101,11 @@ namespace BMRM.Desktop.ViewModels
             }
             catch (OperationCanceledException)
             {
-                _logger.LogInformation("Операция отменена пользователем");
+                _logger.LogInformation("Operation cancelled by user");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при обновлении");
+                _logger.LogError(ex, "Error during update");
             }
         }
 

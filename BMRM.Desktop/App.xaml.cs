@@ -4,10 +4,6 @@ using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using BMRM.Core.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 using Microsoft.EntityFrameworkCore;
 using Hangfire;
 using Hangfire.Storage.SQLite;
@@ -104,7 +100,15 @@ namespace BMRM.Desktop
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             MainWindow = mainWindow;
             MainWindow.Show();
-
+            
+            MainWindow.Closing += (s, args) =>
+            {
+                args.Cancel = true;
+                MainWindow.Hide();
+                _notifyIcon.ShowBalloonTip(1000, "Minimized", 
+                    "The application is running in the background", ToolTipIcon.Info);
+            };
+            
             InitializeTrayIcon();
         }
 
@@ -135,9 +139,10 @@ namespace BMRM.Desktop
             {
                 MainWindow.Show();
                 MainWindow.WindowState = WindowState.Normal;
+                MainWindow.Activate();
             };
 
-            _notifyIcon.ContextMenuStrip.Items.Add("Выход", null, (s, args) =>
+            _notifyIcon.ContextMenuStrip.Items.Add("Exit", null, (s, args) =>
             {
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();
