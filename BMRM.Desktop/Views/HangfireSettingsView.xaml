@@ -4,8 +4,115 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:shell="clr-namespace:BMRM.Desktop.Views.Shell">
+    <UserControl.Resources>
 
-    <Grid>
-        <TextBlock Text="Hangfire Settings" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
-    </Grid>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/CommonStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="JobItemTemplate" TargetType="ItemsControl">
+                <Setter Property="ItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <Border x:Name="ItemBorder"
+                                    Background="#2C2C2C"
+                                    CornerRadius="4"
+                                    Margin="4"
+                                    Padding="8">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid Height="40">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" TextAlignment="Center" Text="{Binding Id}" Foreground="#E0E0E0"
+                                                   FontSize="14" />
+                                        <TextBlock Grid.Column="1" TextAlignment="Center" Text="{Binding CreatedAt}" Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                        <TextBlock Grid.Column="2" TextAlignment="Center" Text="{Binding LastExecution}" Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                        <TextBlock Grid.Column="3" TextAlignment="Center" Text="{Binding NextExecution}" Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                        <TextBlock Grid.Column="4" TextAlignment="Center" Text="{Binding Queue}" Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                        <TextBlock Grid.Column="5" TextAlignment="Center" Text="{Binding Removed}" Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                        <TextBlock Grid.Column="6" TextAlignment="Center" Text="{Binding RetryAttempt}" Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                        <TextBlock Grid.Column="7" TextAlignment="Center" Text="{Binding Cron}" Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <shell:ShellControl Title="{Binding Title}">
+        <shell:ShellControl.Content>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" Command="{Binding DeleteCommand}" CommandParameter="my-job-id"
+                            Content="Remove job" Margin="10" />
+                    <Button Grid.Column="1" Command="{Binding UpdateCommand}" Content="Update" Margin="10" />
+
+                </Grid>
+                <ItemsControl Grid.Row="1" ItemsSource="{Binding ColumnHeaders}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1" Columns="{Binding ColumnHeaders.Count}" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" TextAlignment="Center" FontSize="12" Foreground="#E0E0E0" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Jobs}" Style="{StaticResource JobItemTemplate}" />
+                </ScrollViewer>
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" Command="{Binding AddCommand}" Content="Add job"
+                            Margin="10" />
+                    <Button Grid.Column="1" Command="{Binding NavigateCommand}"
+                            CommandParameter="NewReleasesView" Content="Releases"
+                            Margin="10" />
+
+                </Grid>
+            </Grid>
+        </shell:ShellControl.Content>
+    </shell:ShellControl>
 </UserControl>

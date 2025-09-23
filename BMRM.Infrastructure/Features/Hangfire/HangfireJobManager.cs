@@ -15,14 +15,20 @@ public class HangfireJobManager : IHangfireJobManager
         _manager = manager;
     }
 
-    public void AddOrUpdateJob(string id, Expression<Action> method, string cron)
+    public void AddOrUpdateJob<T>(string id, Expression<Action<T>> method, string cron) where T : class
     {
-        _manager.AddOrUpdate(id, Job.FromExpression(method), cron);
+        _manager.AddOrUpdate<T>(id, method, cron, TimeZoneInfo.Local);
     }
+
 
     public void RemoveJob(string id) => _manager.RemoveIfExists(id);
 
     public void TriggerJob(string id) => RecurringJob.Trigger(id);
+    public void ScheduleJob(Expression<Action> method, DateTime runAt)
+    {
+        BackgroundJob.Schedule(method, runAt - DateTime.Now);
+    }
+
 
     public List<RecurringJobDto> GetJobs()
     {

@@ -7,6 +7,7 @@ using BMRM.Core.Configuration;
 using BMRM.Core.Features.Hangfire;
 using BMRM.Core.Features.ReleaseMonitor;
 using BMRM.Core.Features.Spotify;
+using BMRM.Desktop.Utils;
 using BMRM.Desktop.ViewModels;
 using BMRM.Desktop.Views;
 using BMRM.Infrastructure.Data;
@@ -36,12 +37,6 @@ namespace BMRM.Desktop
         {
             return Container.Resolve<MainWindow>();
         }
-
-        protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
-        {
-            moduleCatalog.AddModule<DesktopModule>();
-        }
-
         protected override void OnInitialized()
         {
             base.OnInitialized();
@@ -50,6 +45,17 @@ namespace BMRM.Desktop
             regionManager.RequestNavigate("MainRegion", nameof(NewReleasesView));
 
             InitializeTrayIcon();
+            
+            var dryIocContainer = Container.GetContainer(); // Prism DryIoc
+            GlobalConfiguration.Configuration.UseActivator(new DryIocJobActivator(dryIocContainer));
+            
+            var storage = Container.Resolve<JobStorage>();
+            var options = new BackgroundJobServerOptions
+            {
+                ServerName = "BMRM-Worker",
+                WorkerCount = 2 
+            };
+            var server = new BackgroundJobServer(options, storage);
 
             MainWindow.Closing += (s, args) =>
             {
@@ -62,10 +68,9 @@ namespace BMRM.Desktop
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Навигация
             containerRegistry.RegisterForNavigation<NewReleasesView, NewReleasesViewModel>();
-
-            // Serilog
+            containerRegistry.RegisterForNavigation<HangfireSettingsView, HangfireSettingsViewModel>();
+            
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -78,8 +83,6 @@ namespace BMRM.Desktop
                 .WriteTo.File("logs/bmrm-log-.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
             
-            
-            // Configuration
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)

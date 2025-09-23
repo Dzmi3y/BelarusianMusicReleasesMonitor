@@ -14,9 +14,5 @@
         ResizeMode="CanResizeWithGrip"
         prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <shell:ShellControl Title="{Binding Title}">
-        <shell:ShellControl.Content>
-            <ContentControl prism:RegionManager.RegionName="MainRegion" />
-        </shell:ShellControl.Content>
-    </shell:ShellControl>
+    <ContentControl prism:RegionManager.RegionName="MainRegion" />
 </Window>

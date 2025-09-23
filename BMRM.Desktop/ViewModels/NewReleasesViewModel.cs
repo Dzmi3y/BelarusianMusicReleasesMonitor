@@ -10,6 +10,7 @@ using BMRM.Core.Features.Spotify;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Prism.Navigation.Regions;
 using Serilog;
 
 namespace BMRM.Desktop.ViewModels
@@ -25,8 +26,8 @@ namespace BMRM.Desktop.ViewModels
         private readonly IBelReleasePlaylistUpdaterService _belReleasePlaylistUpdaterService;
         public ICommand UpdateCommand { get; }
         public ICommand LinkedReleasesCommand { get; }
-
         public ICommand UpdatePlaylistCommand { get; }
+        public DelegateCommand<string> NavigateCommand { get; }
 
         public string Title
         {
@@ -44,9 +45,10 @@ namespace BMRM.Desktop.ViewModels
 
         public ObservableCollection<Release> Tracks { get; } = new();
 
+        
         public NewReleasesViewModel(AppDbContext appDbContext, IReleaseMonitorJob releaseMonitorJob , ISpotifyPlaylistsService spotifyPlaylistsService,
             ISpotifySearchService spotifySearchService, IReleaseSpotifyLinkerService releaseSpotifyLinkerService,
-            IBelReleasePlaylistUpdaterService belReleasePlaylistUpdaterService)
+            IBelReleasePlaylistUpdaterService belReleasePlaylistUpdaterService,IRegionManager regionManager)
         {
             _appDbContext = appDbContext;
             _releaseMonitorJob = releaseMonitorJob;
@@ -58,6 +60,8 @@ namespace BMRM.Desktop.ViewModels
             UpdateCommand = new DelegateCommand(() => _ = UpdateAsync());
             LinkedReleasesCommand = new DelegateCommand(() => _ = LinkedReleasesAsync());
             UpdatePlaylistCommand = new DelegateCommand(() => _ = UpdatePlaylistAsync());
+            NavigateCommand = new DelegateCommand<string>(view =>
+                regionManager.RequestNavigate("MainRegion", view));
             
             _ = InitAsync().ContinueWith(t =>
             {
@@ -113,5 +117,6 @@ namespace BMRM.Desktop.ViewModels
         {
             await _belReleasePlaylistUpdaterService.UpdateBelReleasePlaylistAsync();
         }
+
     }
 }
