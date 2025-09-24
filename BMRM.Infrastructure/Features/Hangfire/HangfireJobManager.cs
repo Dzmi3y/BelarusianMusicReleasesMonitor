@@ -3,6 +3,7 @@ using BMRM.Core.Features.Hangfire;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.Storage;
+using Hangfire.Storage.Monitoring;
 
 namespace BMRM.Infrastructure.Features.Hangfire;
 
@@ -32,7 +33,19 @@ public class HangfireJobManager : IHangfireJobManager
 
     public List<RecurringJobDto> GetJobs()
     {
+       var test = GetScheduledJobs();
+       var test = 
         var connection = JobStorage.Current.GetConnection();
         return connection.GetRecurringJobs();
     }
+    
+    public List<ScheduledJobDto> GetScheduledJobs()
+    {
+        var monitoring = JobStorage.Current.GetMonitoringApi();
+        monitoring.ProcessingJobs(0, 100);
+        var scheduled = monitoring.ScheduledJobs(0, 100); // 0 — offset, 100 — лимит
+
+        return scheduled.Select(j => j.Value).ToList();
+    }
+    
 }

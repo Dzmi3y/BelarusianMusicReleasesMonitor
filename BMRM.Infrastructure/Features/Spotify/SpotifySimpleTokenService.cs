@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using BMRM.Core.Features.Http;
 using BMRM.Core.Features.Spotify;
 using BMRM.Core.Features.Spotify.SpotifyResponseModels;
 using BMRM.Core.Shared.Enums;
@@ -12,15 +13,15 @@ namespace BMRM.Infrastructure.Features.Spotify;
 public class SpotifySimpleTokenService : ISpotifySimpleTokenService
 {
     private const string TokenUrl = "https://accounts.spotify.com/api/token";
-    
-    private readonly HttpClient _httpClient;
+
+    private readonly ICacheableHttpClient _cacheableHttpClient;
     private readonly string _clientId;
     private readonly string _clientSecret;
     private readonly AppDbContext _db;
 
-    public SpotifySimpleTokenService(HttpClient httpClient, AppDbContext db)
+    public SpotifySimpleTokenService(ICacheableHttpClient cacheableHttpClient, AppDbContext db)
     {
-        _httpClient = httpClient;
+        _cacheableHttpClient = cacheableHttpClient;
         _clientId = GetRequiredEnv("spotify_client_id");
         _clientSecret = GetRequiredEnv("spotify_client_secret");
         _db = db;
@@ -32,11 +33,9 @@ public class SpotifySimpleTokenService : ISpotifySimpleTokenService
 
         try
         {
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var tokenResponse = JsonSerializer.Deserialize<SpotifySimpleTokenResponse>(json);
+            var tokenResponse =
+                await _cacheableHttpClient.SendAsync<SpotifySimpleTokenResponse?>(request,
+                    HttpCompletionOption.ResponseHeadersRead);
 
             if (tokenResponse != null)
             {

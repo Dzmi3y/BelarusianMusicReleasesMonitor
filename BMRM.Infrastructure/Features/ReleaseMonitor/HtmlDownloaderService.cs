@@ -1,14 +1,16 @@
 ﻿using System.IO.Compression;
 using System.Text;
+using BMRM.Core.Features.Http;
 using BMRM.Core.Features.ReleaseMonitor;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace BMRM.Infrastructure.Features.ReleaseMonitor;
 
-public class HtmlDownloaderService(HttpClient httpClient)
+public class HtmlDownloaderService(ICacheableHttpClient cacheableHttpClient)
     : IHtmlDownloaderService
 {
+    private readonly ICacheableHttpClient _cacheableHttpClient = cacheableHttpClient;
     static HtmlDownloaderService()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -20,7 +22,7 @@ public class HtmlDownloaderService(HttpClient httpClient)
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:118.0) Gecko/20100101 Firefox/118.0");
 
-            var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            var response = await _cacheableHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
 
             var charset = response.Content.Headers.ContentType?.CharSet;

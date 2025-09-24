@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Forms;
 using BMRM.Core.Configuration;
 using BMRM.Core.Features.Hangfire;
+using BMRM.Core.Features.Http;
 using BMRM.Core.Features.ReleaseMonitor;
 using BMRM.Core.Features.Spotify;
 using BMRM.Desktop.Utils;
@@ -12,6 +14,7 @@ using BMRM.Desktop.ViewModels;
 using BMRM.Desktop.Views;
 using BMRM.Infrastructure.Data;
 using BMRM.Infrastructure.Features.Hangfire;
+using BMRM.Infrastructure.Features.Http;
 using BMRM.Infrastructure.Features.ReleaseMonitor;
 using BMRM.Infrastructure.Features.Spotify;
 using DryIoc;
@@ -102,6 +105,10 @@ namespace BMRM.Desktop
             containerRegistry.RegisterSingleton<IHangfireJobManager, HangfireJobManager>();
             containerRegistry.RegisterSingleton<IRecurringJobManager>(() => new RecurringJobManager(JobStorage.Current));
             containerRegistry.RegisterSingleton<IRecurringJobService, RecurringJobService>();
+            
+            containerRegistry.RegisterInstance<ICacheableHttpClient>(
+                new CacheableHttpClient(new HttpClient()));
+
 
             var dbConnection = config.GetConnectionString("Default");
             EnsureDirectoryExists(dbConnection);

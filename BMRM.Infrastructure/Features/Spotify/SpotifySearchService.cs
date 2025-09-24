@@ -1,4 +1,5 @@
-﻿using BMRM.Core.Features.Spotify;
+﻿using BMRM.Core.Features.Http;
+using BMRM.Core.Features.Spotify;
 using BMRM.Core.Features.Spotify.SpotifyResponseModels;
 using BMRM.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
@@ -9,9 +10,9 @@ public class SpotifySearchService : SpotifyBaseService, ISpotifySearchService
 {
     private const string UrlTemplate = "https://api.spotify.com/v1/search?q={0}&type=album&limit=1&offset=0";
 
-    public SpotifySearchService(HttpClient httpClient, ISpotifySimpleTokenService simpleTokenService,
+    public SpotifySearchService(ICacheableHttpClient cacheableHttpClient, ISpotifySimpleTokenService simpleTokenService,
         ISpotifyCodeFlowTokenService spotifyCodeFlowTokenService, AppDbContext db)
-        : base(httpClient, simpleTokenService, spotifyCodeFlowTokenService, db)
+        : base(cacheableHttpClient, simpleTokenService, spotifyCodeFlowTokenService, db)
     {
     }
 
