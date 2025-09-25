@@ -7,9 +7,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Release> Releases => Set<Release>();
     public DbSet<SpotifyTrack> SpotifyTracks => Set<SpotifyTrack>();
-    
+
     public DbSet<PlaylistTrack> Playlists => Set<PlaylistTrack>();
     public DbSet<Token> Tokens => Set<Token>();
+    public DbSet<JobDefinition> JobDefinitions => Set<JobDefinition>();
+    public DbSet<JobLog> JobLogs => Set<JobLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -18,11 +20,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithOne(t => t.Release)
             .HasForeignKey(t => t.ReleaseId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<SpotifyTrack>()
             .HasMany(r => r.Playlists)
             .WithOne(t => t.SpotifyTrack)
             .HasForeignKey(t => t.SpotifyTrackId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<JobDefinition>()
+            .HasKey(j => j.JobId);
     }
 }

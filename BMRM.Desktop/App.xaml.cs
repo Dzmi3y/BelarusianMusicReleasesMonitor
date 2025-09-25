@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Forms;
 using BMRM.Core.Configuration;
 using BMRM.Core.Features.Hangfire;
+using BMRM.Core.Features.Hangfire.Jobs;
 using BMRM.Core.Features.Http;
 using BMRM.Core.Features.ReleaseMonitor;
 using BMRM.Core.Features.Spotify;
@@ -14,6 +15,7 @@ using BMRM.Desktop.ViewModels;
 using BMRM.Desktop.Views;
 using BMRM.Infrastructure.Data;
 using BMRM.Infrastructure.Features.Hangfire;
+using BMRM.Infrastructure.Features.Hangfire.Jobs;
 using BMRM.Infrastructure.Features.Http;
 using BMRM.Infrastructure.Features.ReleaseMonitor;
 using BMRM.Infrastructure.Features.Spotify;
@@ -40,6 +42,7 @@ namespace BMRM.Desktop
         {
             return Container.Resolve<MainWindow>();
         }
+
         protected override void OnInitialized()
         {
             base.OnInitialized();
@@ -48,15 +51,15 @@ namespace BMRM.Desktop
             regionManager.RequestNavigate("MainRegion", nameof(NewReleasesView));
 
             InitializeTrayIcon();
-            
+
             var dryIocContainer = Container.GetContainer(); // Prism DryIoc
             GlobalConfiguration.Configuration.UseActivator(new DryIocJobActivator(dryIocContainer));
-            
+
             var storage = Container.Resolve<JobStorage>();
             var options = new BackgroundJobServerOptions
             {
                 ServerName = "BMRM-Worker",
-                WorkerCount = 2 
+                WorkerCount = 2
             };
             var server = new BackgroundJobServer(options, storage);
 
@@ -73,7 +76,7 @@ namespace BMRM.Desktop
         {
             containerRegistry.RegisterForNavigation<NewReleasesView, NewReleasesViewModel>();
             containerRegistry.RegisterForNavigation<HangfireSettingsView, HangfireSettingsViewModel>();
-            
+
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -85,27 +88,27 @@ namespace BMRM.Desktop
                 .WriteTo.Console()
                 .WriteTo.File("logs/bmrm-log-.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
-            
+
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
             containerRegistry.RegisterInstance<IConfiguration>(config);
-            
+
 
             var releasePatternConfig = config.GetSection("ReleasePatterns").Get<ReleasePatternConfig>();
             containerRegistry.RegisterInstance<IOptions<ReleasePatternConfig>>(
                 Options.Create(releasePatternConfig));
-            
+
             var hangfireConnection = config.GetConnectionString("Hangfire");
             var hangfirePath = EnsureDirectoryExists(hangfireConnection);
             GlobalConfiguration.Configuration.UseSQLiteStorage(hangfirePath);
             containerRegistry.RegisterInstance(JobStorage.Current);
-            containerRegistry.RegisterSingleton<IHangfireJobManager, HangfireJobManager>();
-            containerRegistry.RegisterSingleton<IRecurringJobManager>(() => new RecurringJobManager(JobStorage.Current));
+            containerRegistry.RegisterSingleton<IRecurringJobManager>(() =>
+                new RecurringJobManager(JobStorage.Current));
             containerRegistry.RegisterSingleton<IRecurringJobService, RecurringJobService>();
-            
+
             containerRegistry.RegisterInstance<ICacheableHttpClient>(
                 new CacheableHttpClient(new HttpClient()));
 
@@ -118,6 +121,10 @@ namespace BMRM.Desktop
                     .UseLazyLoadingProxies()
                     .Options));
 
+
+            containerRegistry.RegisterSingleton<IUpdateSpotifyPlaylistJob, UpdateSpotifyPlaylistJob>();
+            containerRegistry.RegisterSingleton<IJobDispatcherService, JobDispatcherService>();
+            containerRegistry.RegisterSingleton<IJobRepository, JobRepository>();
             containerRegistry.RegisterSingleton<IReleaseMonitorJob, ReleaseMonitorJob>();
             containerRegistry.RegisterSingleton<IReleaseTextParserService, ReleaseTextParserService>();
             containerRegistry.RegisterSingleton<IHtmlDownloaderService, HtmlDownloaderService>();

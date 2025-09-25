@@ -30,28 +30,13 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock Grid.Column="0" TextAlignment="Center" Text="{Binding Id}" Foreground="#E0E0E0"
+                                        <TextBlock Grid.Column="0" TextAlignment="Center" Text="{Binding JobId}" Foreground="#E0E0E0"
                                                    FontSize="14" />
-                                        <TextBlock Grid.Column="1" TextAlignment="Center" Text="{Binding CreatedAt}" Foreground="#9E9E9E"
+                                        <TextBlock Grid.Column="1" TextAlignment="Center" Text="{Binding Cron}" Foreground="#9E9E9E"
                                                    FontSize="13" />
-                                        <TextBlock Grid.Column="2" TextAlignment="Center" Text="{Binding LastExecution}" Foreground="#9E9E9E"
-                                                   FontSize="13" />
-                                        <TextBlock Grid.Column="3" TextAlignment="Center" Text="{Binding NextExecution}" Foreground="#9E9E9E"
-                                                   FontSize="13" />
-                                        <TextBlock Grid.Column="4" TextAlignment="Center" Text="{Binding Queue}" Foreground="#9E9E9E"
-                                                   FontSize="13" />
-                                        <TextBlock Grid.Column="5" TextAlignment="Center" Text="{Binding Removed}" Foreground="#9E9E9E"
-                                                   FontSize="13" />
-                                        <TextBlock Grid.Column="6" TextAlignment="Center" Text="{Binding RetryAttempt}" Foreground="#9E9E9E"
-                                                   FontSize="13" />
-                                        <TextBlock Grid.Column="7" TextAlignment="Center" Text="{Binding Cron}" Foreground="#9E9E9E"
+                                        <TextBlock Grid.Column="2" TextAlignment="Center" Text="{Binding Enabled}" Foreground="#9E9E9E"
                                                    FontSize="13" />
                                     </Grid>
                                 </Grid>
