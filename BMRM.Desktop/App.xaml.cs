@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.IO;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Forms;
@@ -19,15 +18,13 @@ using BMRM.Infrastructure.Features.Hangfire.Jobs;
 using BMRM.Infrastructure.Features.Http;
 using BMRM.Infrastructure.Features.ReleaseMonitor;
 using BMRM.Infrastructure.Features.Spotify;
-using DryIoc;
 using Hangfire;
-using Hangfire.Storage.SQLite;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Prism.Container.DryIoc;
 using Prism.DryIoc;
 using Prism.Ioc;
-using Prism.Modularity;
 using Prism.Navigation.Regions;
 using Serilog;
 using Serilog.Events;
@@ -102,25 +99,31 @@ namespace BMRM.Desktop
                 Options.Create(releasePatternConfig));
 
             var hangfireConnection = config.GetConnectionString("Hangfire");
-            var hangfirePath = EnsureDirectoryExists(hangfireConnection);
-            GlobalConfiguration.Configuration.UseSQLiteStorage(hangfirePath);
+
+            GlobalConfiguration.Configuration
+                .UsePostgreSqlStorage(hangfireConnection, new PostgreSqlStorageOptions
+                {
+                    SchemaName = "hangfire",
+                    InvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.FromSeconds(15)
+                });
+
+
             containerRegistry.RegisterInstance(JobStorage.Current);
             containerRegistry.RegisterSingleton<IRecurringJobManager>(() =>
                 new RecurringJobManager(JobStorage.Current));
             containerRegistry.RegisterSingleton<IRecurringJobService, RecurringJobService>();
 
-            containerRegistry.RegisterInstance<ICacheableHttpClient>(
-                new CacheableHttpClient(new HttpClient()));
-
 
             var dbConnection = config.GetConnectionString("Default");
-            EnsureDirectoryExists(dbConnection);
             containerRegistry.Register<AppDbContext>(() =>
                 new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
-                    .UseSqlite(dbConnection, x => x.MigrationsAssembly("BMRM.Infrastructure"))
+                    .UseNpgsql(dbConnection, x => x.MigrationsAssembly("BMRM.Infrastructure"))
                     .UseLazyLoadingProxies()
                     .Options));
 
+            containerRegistry.RegisterInstance<ICacheableHttpClient>(
+                new CacheableHttpClient(new HttpClient()));
 
             containerRegistry.RegisterSingleton<IUpdateSpotifyPlaylistJob, UpdateSpotifyPlaylistJob>();
             containerRegistry.RegisterSingleton<IJobDispatcherService, JobDispatcherService>();
@@ -135,17 +138,6 @@ namespace BMRM.Desktop
             containerRegistry.RegisterSingleton<IReleaseSpotifyLinkerService, ReleaseSpotifyLinkerService>();
             containerRegistry.RegisterSingleton<IBelReleasePlaylistUpdaterService, BelReleasePlaylistUpdaterService>();
             containerRegistry.RegisterSingleton<ISpotifyCodeFlowTokenService, SpotifyCodeFlowTokenService>();
-        }
-
-        private string EnsureDirectoryExists(string connectionString)
-        {
-            var builder = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(connectionString);
-            var dbPath = builder.DataSource;
-            var directory = Path.GetDirectoryName(dbPath);
-
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-            return dbPath;
         }
 
         private void InitializeTrayIcon()

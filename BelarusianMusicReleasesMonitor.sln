@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMRM.Worker", "BMRM.Worker\BMRM.Worker.csproj", "{89E85629-2667-4F78-B68A-87F3101290E5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMRM.Core", "BMRM.Core\BMRM.Core.csproj", "{4D55497A-2C5A-4DF3-B634-01C436742A97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMRM.Infrastructure", "BMRM.Infrastructure\BMRM.Infrastructure.csproj", "{3060FE0D-D2C8-4AB1-8AEF-89574D5C3A42}"
@@ -14,10 +12,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{89E85629-2667-4F78-B68A-87F3101290E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{89E85629-2667-4F78-B68A-87F3101290E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{89E85629-2667-4F78-B68A-87F3101290E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{89E85629-2667-4F78-B68A-87F3101290E5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4D55497A-2C5A-4DF3-B634-01C436742A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4D55497A-2C5A-4DF3-B634-01C436742A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D55497A-2C5A-4DF3-B634-01C436742A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
