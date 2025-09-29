@@ -1,6 +1,7 @@
 ﻿using BMRM.Core.Features.Hangfire;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
 namespace BMRM.Infrastructure.Features.Hangfire;
@@ -9,7 +10,43 @@ public class JobRepository : IJobRepository
 {
     private readonly AppDbContext _db;
 
-    public JobRepository(AppDbContext db) => _db = db;
+    public JobRepository(AppDbContext db)
+    {
+        _db = db;
+        InitJobs();
+    }
+
+    private void InitJobs()
+    {
+        var expectedJobIds = new[]
+        {
+            JobIds.UpdateSpotifyPlaylist,
+            JobIds.VkBelmuzParsing,
+            JobIds.BandcampBelmuzParsing
+        };
+
+        var existingJobIds = _db.JobDefinitions
+            .Where(j => expectedJobIds.Contains(j.JobId))
+            .Select(j => j.JobId)
+            .ToList();
+
+        var missingJobIds = expectedJobIds
+            .Except(existingJobIds)
+            .ToList();
+
+        if (missingJobIds.Any())
+        {
+            foreach (var missingJobId in missingJobIds)
+            {
+                Save(new JobDefinition()
+                {
+                    JobId = missingJobId,
+                    Cron = Cron.Daily(),
+                    Enabled = false
+                });
+            }
+        }
+    }
 
     public JobDefinition? Get(string jobId) =>
         _db.JobDefinitions.FirstOrDefault(j => j.JobId == jobId);
@@ -27,6 +64,7 @@ public class JobRepository : IJobRepository
             existing.Cron = job.Cron;
             existing.Enabled = job.Enabled;
         }
+
         _db.SaveChanges();
     }
 
@@ -49,7 +87,7 @@ public class JobRepository : IJobRepository
             .FirstOrDefault();
         return log;
     }
-    
+
     public List<JobLog> GetLastLogs(int count)
     {
         var log = _db.JobLogs
@@ -64,7 +102,7 @@ public class JobRepository : IJobRepository
         _db.JobLogs.Add(new JobLog
         {
             JobId = jobId,
-            Timestamp = timestamp,
+            Timestamp = DateTime.SpecifyKind(timestamp, DateTimeKind.Utc),
             Success = success,
             ErrorMessage = error
         });

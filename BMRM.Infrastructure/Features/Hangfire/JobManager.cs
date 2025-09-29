@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using BMRM.Core.Features.Hangfire;
+﻿using BMRM.Core.Features.Hangfire;
 using BMRM.Core.Shared.Models;
 using Hangfire;
 
@@ -12,7 +11,8 @@ public class JobManager : IJobManager
     private readonly IJobRepository _repo;
     private readonly IJobDispatcherService _jobDispatcherService;
 
-    public JobManager(IRecurringJobManager recurring, IBackgroundJobClient client, IJobRepository repo, IJobDispatcherService jobDispatcherService)
+    public JobManager(IRecurringJobManager recurring, IBackgroundJobClient client, IJobRepository repo,
+        IJobDispatcherService jobDispatcherService)
     {
         _recurring = recurring;
         _client = client;
@@ -20,71 +20,82 @@ public class JobManager : IJobManager
         _jobDispatcherService = jobDispatcherService;
     }
 
-    public void CreateOrUpdateJob(JobId jobId, string cron, bool enabled)
+    public void CreateOrUpdateJob(string jobId, string cron, bool enabled)
     {
         JobDefinition job = new JobDefinition()
         {
-            JobId = jobId.GetDescription(),
+            JobId = jobId,
             Cron = cron,
             Enabled = enabled
         };
-;
-        
-        _recurring.AddOrUpdate(job.JobId, ()=> ExecuteJob(jobId), job.Cron);
+        ;
+
+        _recurring.AddOrUpdate(job.JobId, () => ExecuteJob(jobId, false), job.Cron);
         _repo.Save(job);
     }
 
-    public void RemoveJob(JobId jobId)
+    public void RemoveJob(string jobId)
     {
-        _recurring.RemoveIfExists(jobId.GetDescription());
-        _repo.Disable(jobId.GetDescription());
+        _recurring.RemoveIfExists(jobId);
+        _repo.Disable(jobId);
     }
 
-    public void RunJobNow(JobId jobId)
+    public void RunJobNow(string jobId)
     {
-        _client.Enqueue(() => ExecuteJob(jobId));
+        _client.Enqueue(() => ExecuteJob(jobId, true));
     }
 
     public IEnumerable<JobDefinition> GetAllJobs() => _repo.GetAll();
 
-    public async Task ExecuteJob(JobId jobId)
+    [AutomaticRetry(Attempts = 0)]
+    public async Task ExecuteJob(string jobId, bool IsRunOnce = false)
     {
-        var job = _repo.Get(jobId.GetDescription());
-        if (job == null || !job.Enabled) return;
-        
-        var lastLog = _repo.GetLastLog(jobId.GetDescription());
+        var job = _repo.Get(jobId);
+
+        if (job is null)
+            return;
+
+        if (!job.Enabled && !IsRunOnce)
+            return;
+
+
+        var lastLog = _repo.GetLastLog(jobId);
         if (lastLog != null)
         {
             var timeSinceLastLog = DateTime.UtcNow - lastLog.Timestamp;
-            if (timeSinceLastLog < TimeSpan.FromMinutes(1))
+            if (timeSinceLastLog < TimeSpan.FromSeconds(20))
             {
-                _repo.LogRun(jobId.GetDescription(), DateTime.UtcNow, false, "Rejected");
+                _repo.LogRun(jobId, DateTime.UtcNow, false, "Rejected");
                 return;
             }
         }
-        
+
         try
         {
-            await DelayAsync(jobId.GetDescription(),10);
+            if (!IsRunOnce)
+            {
+                await DelayAsync(jobId, 10);
+            }
+
             await _jobDispatcherService.DispatchAsync(jobId);
-            _repo.LogRun(jobId.GetDescription(), DateTime.UtcNow, true);
+            _repo.LogRun(jobId, DateTime.UtcNow, true);
         }
         catch (Exception ex)
         {
-            _repo.LogRun(jobId.GetDescription(), DateTime.UtcNow, false, ex.Message);
+            _repo.LogRun(jobId, DateTime.UtcNow, false, ex.Message);
         }
     }
 
     public List<JobLog> GetLastLogs(int count)
     {
-       return _repo.GetLastLogs(count);
+        return _repo.GetLastLogs(count);
     }
 
-    private async Task DelayAsync(string jobId,int delay)
+    private async Task DelayAsync(string jobId, int delay)
     {
         var random = new Random();
         var delayMinutes = random.Next(0, delay);
-        var info  = $"{jobId} wait for: {TimeSpan.FromMinutes(delayMinutes)}" ;
+        var info = $"{jobId} wait for: {TimeSpan.FromMinutes(delayMinutes)}";
         _repo.LogRun(jobId, DateTime.UtcNow, false, info);
         await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
     }

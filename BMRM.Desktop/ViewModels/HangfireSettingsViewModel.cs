@@ -1,43 +1,38 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using System.Windows.Threading;
 using BMRM.Core.Features.Hangfire;
 using BMRM.Core.Features.Spotify;
 using BMRM.Core.Shared.Models;
-using Hangfire;
-using Hangfire.Storage;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
-using Serilog;
 
 namespace BMRM.Desktop.ViewModels;
 
 public class HangfireSettingsViewModel : BindableBase
 {
-    private string _title = "HangfireSettings";
+    private string _title = "Job Settings";
 
     private readonly IJobManager _jobManager;
-    private readonly IBelReleasePlaylistUpdaterService _belReleasePlaylistUpdaterService;
-
     public ICommand UpdateCommand { get; }
-    public ICommand AddCommand { get; }
-    public DelegateCommand<string> DeleteCommand { get; }
-
+    public DelegateCommand<string> JobToggleCommand { get; }
+    public DelegateCommand<string> RunJobOnceCommand { get; }
     public ObservableCollection<JobDefinition> Jobs { get; } = new();
     public ObservableCollection<JobLog> Logs { get; } = new();
 
     public ObservableCollection<string> JobColumnHeaders { get; } = new()
     {
-        "JobId", "Cron", "Enabled",
+        "JobId", "Cron", "", ""
     };
 
     public ObservableCollection<string> LogColumnHeaders { get; } = new()
     {
         "Id", "JobId", "Timestamp", "Success", "ErrorMessage"
     };
-    
+
     public string Title
     {
         get { return _title; }
@@ -48,20 +43,18 @@ public class HangfireSettingsViewModel : BindableBase
 
     private DispatcherTimer _timer;
 
-    public HangfireSettingsViewModel(IRegionManager regionManager, IJobManager jobManager,
-        IBelReleasePlaylistUpdaterService belReleasePlaylistUpdaterService)
+    public HangfireSettingsViewModel(IRegionManager regionManager, IJobManager jobManager)
     {
         NavigateCommand = new DelegateCommand<string>(view =>
             regionManager.RequestNavigate("MainRegion", view));
 
         _jobManager = jobManager;
         UpdateCommand = new DelegateCommand(UpdateAll);
-        AddCommand = new DelegateCommand(AddJob);
-        DeleteCommand = new DelegateCommand<string>(id =>
-            DeleteJob(id));
-
-        _belReleasePlaylistUpdaterService = belReleasePlaylistUpdaterService;
-
+        RunJobOnceCommand = new DelegateCommand<string>(id =>
+            RunJobOnce(id));
+        JobToggleCommand = new DelegateCommand<string>(id =>
+            JobToggle(id));
+        
         UpdateAll();
         SetUpTimer();
     }
@@ -94,17 +87,23 @@ public class HangfireSettingsViewModel : BindableBase
         UpdateLogs();
     }
 
-    private void AddJob()
+    private void RunJobOnce(string id)
     {
-        _jobManager.CreateOrUpdateJob(JobId.UpdateSpotifyPlaylist, Cron.Minutely(), true);
-
-        UpdateJobsList();
+        _jobManager.RunJobNow(id);
+        UpdateAll();
     }
 
-
-    private void DeleteJob(string id)
+    private void JobToggle(string id)
     {
-        _jobManager.RemoveJob(JobId.UpdateSpotifyPlaylist);
-        UpdateJobsList();
+        if (Jobs.FirstOrDefault(j => j.JobId == id) is { Enabled: true })
+        {
+            //_jobManager.RemoveJob(id);
+        }
+        else
+        {
+            //_jobManager.CreateOrUpdateJob(id, Cron.Daily(), true);
+        }
+
+        UpdateAll();
     }
 }

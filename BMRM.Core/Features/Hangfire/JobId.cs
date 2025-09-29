@@ -1,24 +1,7 @@
-﻿using System.ComponentModel;
-using System.Reflection;
-
-namespace BMRM.Core.Features.Hangfire;
-
-public enum JobId
+﻿namespace BMRM.Core.Features.Hangfire;
+public static class JobIds
 {
-    [Description("update-spotify-playlist")]
-    UpdateSpotifyPlaylist,
-    [Description("vk-belmuz-parsing")]
-    VkBelmuzParsing,
-    [Description("bandcamp-belmuz-parsing")]
-    BandcampBelmuzParsing,
-}
-
-public static class EnumExtensions
-{
-    public static string GetDescription(this Enum value)
-    {
-        var field = value.GetType().GetField(value.ToString());
-        var attr = field?.GetCustomAttribute<DescriptionAttribute>();
-        return attr?.Description ?? value.ToString();
-    }
+    public const string UpdateSpotifyPlaylist = "update-spotify-playlist";
+    public const string VkBelmuzParsing = "vk-belmuz-parsing";
+    public const string BandcampBelmuzParsing = "bandcamp-belmuz-parsing";
 }

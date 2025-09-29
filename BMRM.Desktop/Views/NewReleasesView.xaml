@@ -135,7 +135,6 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -144,26 +143,14 @@
                     </Grid.ColumnDefinitions>
 
                     <Button Grid.Column="0" Command="{Binding UpdateCommand}" Content="Update" Margin="10" />
-                    <Button Grid.Column="1" Command="{Binding LinkedReleasesCommand}" Content="Linked Releases"
+                    <Button Grid.Column="1" Command="{Binding NavigateCommand}"
+                            CommandParameter="HangfireSettingsView" Content="Job settings"
                             Margin="10" />
 
                 </Grid>
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Tracks}" Style="{StaticResource TrackItemTemplate}" />
                 </ScrollViewer>
-                <Grid Grid.Row="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Button Grid.Column="0" Command="{Binding UpdatePlaylistCommand}" Content="Update playlist"
-                            Margin="10" />
-                    <Button Grid.Column="1" Command="{Binding NavigateCommand}"
-                            CommandParameter="HangfireSettingsView" Content="Hf settings"
-                            Margin="10" />
-
-                </Grid>
             </Grid>
         </shell:ShellControl.Content>
     </shell:ShellControl>

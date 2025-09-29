@@ -3,7 +3,7 @@ using BMRM.Core.Features.Spotify;
 
 namespace BMRM.Infrastructure.Features.Hangfire.Jobs;
 
-public class UpdateSpotifyPlaylistJob:IUpdateSpotifyPlaylistJob
+public class UpdateSpotifyPlaylistJob : IUpdateSpotifyPlaylistJob
 {
     private readonly IBelReleasePlaylistUpdaterService _belReleasePlaylistUpdaterService;
 
@@ -14,7 +14,6 @@ public class UpdateSpotifyPlaylistJob:IUpdateSpotifyPlaylistJob
 
     public async Task ExecuteJobAsync()
     {
-        Console.WriteLine("Updating Spotify Playlist");
-        // await _belReleasePlaylistUpdaterService.UpdateBelReleasePlaylistAsync();
+        await _belReleasePlaylistUpdaterService.UpdateBelReleasePlaylistAsync();
     }
 }

@@ -2,5 +2,5 @@
 
 public interface IJobDispatcherService
 {
-    Task DispatchAsync(JobId jobId);
+    Task DispatchAsync(string jobId);
 }

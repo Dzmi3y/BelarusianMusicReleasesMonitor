@@ -1,5 +1,4 @@
 ﻿using BMRM.Core.Features.Hangfire;
-using BMRM.Core.Features.Hangfire.Jobs;
 using BMRM.Core.Features.ReleaseMonitor;
 using BMRM.Core.Features.Spotify;
 using BMRM.Infrastructure.Features.Hangfire.Jobs;
@@ -9,34 +8,48 @@ namespace BMRM.Infrastructure.Features.Hangfire;
 
 public class JobDispatcherService : IJobDispatcherService
 {
-    private readonly Dictionary<JobId, Func<Task>> _jobs;
+    private readonly Dictionary<string, Func<Task>> _jobs;
 
     public JobDispatcherService(
         IBelReleasePlaylistUpdaterService belReleasePlaylistUpdaterService,
         IVkReleaseMonitorService vkReleaseMonitorService,
-        IBandcampReleaseMonitorService bandcampReleaseMonitorService)
+        IBandcampReleaseMonitorService bandcampReleaseMonitorService,
+        IReleaseSpotifyLinkerService releaseSpotifyLinkerService)
     {
         _jobs = RegisterJobs(
             belReleasePlaylistUpdaterService,
             vkReleaseMonitorService,
-            bandcampReleaseMonitorService
+            bandcampReleaseMonitorService,
+            releaseSpotifyLinkerService
         );
     }
 
-    private Dictionary<JobId, Func<Task>> RegisterJobs(
+    private Dictionary<string, Func<Task>> RegisterJobs(
         IBelReleasePlaylistUpdaterService belReleasePlaylistUpdaterService,
         IVkReleaseMonitorService vkReleaseMonitorService,
-        IBandcampReleaseMonitorService bandcampReleaseMonitorService)
+        IBandcampReleaseMonitorService bandcampReleaseMonitorService,
+        IReleaseSpotifyLinkerService releaseSpotifyLinkerService
+    )
     {
-        return new Dictionary<JobId, Func<Task>>
+        return new Dictionary<string, Func<Task>>
         {
-            { JobId.UpdateSpotifyPlaylist, new UpdateSpotifyPlaylistJob(belReleasePlaylistUpdaterService).ExecuteJobAsync },
-            { JobId.VkBelmuzParsing, new VkReleaseMonitorJob(vkReleaseMonitorService).ExecuteJobAsync },
-            { JobId.BandcampBelmuzParsing, new BandcampReleaseMonitorJob(bandcampReleaseMonitorService).ExecuteJobAsync }
+            {
+                JobIds.UpdateSpotifyPlaylist,
+                new UpdateSpotifyPlaylistJob(belReleasePlaylistUpdaterService).ExecuteJobAsync
+            },
+            {
+                JobIds.VkBelmuzParsing,
+                new VkReleaseMonitorJob(vkReleaseMonitorService, releaseSpotifyLinkerService).ExecuteJobAsync
+            },
+            {
+                JobIds.BandcampBelmuzParsing,
+                new BandcampReleaseMonitorJob(bandcampReleaseMonitorService, releaseSpotifyLinkerService)
+                    .ExecuteJobAsync
+            }
         };
     }
 
-    public async Task DispatchAsync(JobId jobId)
+    public async Task DispatchAsync(string jobId)
     {
         if (_jobs.TryGetValue(jobId, out var job))
         {

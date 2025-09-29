@@ -1,15 +1,16 @@
 ﻿using System;
-using Prism.Commands;
-using Prism.Mvvm;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Threading;
 using BMRM.Core.Features.ReleaseMonitor;
 using BMRM.Core.Features.Spotify;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Prism.Commands;
+using Prism.Mvvm;
 using Prism.Navigation.Regions;
 using Serilog;
 
@@ -19,14 +20,7 @@ namespace BMRM.Desktop.ViewModels
     {
         private AppDbContext _appDbContext;
         private string _title = "BMRM";
-        private IVkReleaseMonitorService _vkReleaseMonitorService;
-        private readonly ISpotifyPlaylistsService _spotifyPlaylistsService;
-        private readonly ISpotifySearchService _spotifySearchService;
-        private readonly IReleaseSpotifyLinkerService _releaseSpotifyLinkerService;
-        private readonly IBelReleasePlaylistUpdaterService _belReleasePlaylistUpdaterService;
         public ICommand UpdateCommand { get; }
-        public ICommand LinkedReleasesCommand { get; }
-        public ICommand UpdatePlaylistCommand { get; }
         public DelegateCommand<string> NavigateCommand { get; }
 
         public string Title
@@ -45,36 +39,32 @@ namespace BMRM.Desktop.ViewModels
 
         public ObservableCollection<Release> Tracks { get; } = new();
 
-        
-        public NewReleasesViewModel(AppDbContext appDbContext, IVkReleaseMonitorService vkReleaseMonitorService , ISpotifyPlaylistsService spotifyPlaylistsService,
-            ISpotifySearchService spotifySearchService, IReleaseSpotifyLinkerService releaseSpotifyLinkerService,
-            IBelReleasePlaylistUpdaterService belReleasePlaylistUpdaterService,IRegionManager regionManager)
+        private DispatcherTimer _timer;
+
+
+        public NewReleasesViewModel(AppDbContext appDbContext, IRegionManager regionManager)
         {
             _appDbContext = appDbContext;
-            _vkReleaseMonitorService = vkReleaseMonitorService;
-            _spotifyPlaylistsService = spotifyPlaylistsService;
-            _spotifySearchService = spotifySearchService;
-            _releaseSpotifyLinkerService = releaseSpotifyLinkerService;
-            _belReleasePlaylistUpdaterService = belReleasePlaylistUpdaterService;
 
             UpdateCommand = new DelegateCommand(() => _ = UpdateAsync());
-            LinkedReleasesCommand = new DelegateCommand(() => _ = LinkedReleasesAsync());
-            UpdatePlaylistCommand = new DelegateCommand(() => _ = UpdatePlaylistAsync());
             NavigateCommand = new DelegateCommand<string>(view =>
                 regionManager.RequestNavigate("MainRegion", view));
-            
-            _ = InitAsync().ContinueWith(t =>
+
+            RunUpdateWithLogging();
+        }
+
+        private void RunUpdateWithLogging()
+        {
+            _ = UpdateAsync().ContinueWith(t =>
             {
                 if (t.Exception != null)
                 {
                     Log.Logger.Error(t.Exception.Message);
-            
-                     Log.Logger.Error(t.Exception.Message);
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        private async Task InitAsync()
+        private async Task UpdateAsync()
         {
             try
             {
@@ -87,35 +77,5 @@ namespace BMRM.Desktop.ViewModels
                 Log.Logger.Error(ex.Message);
             }
         }
-
-        private async Task LinkedReleasesAsync()
-        {
-            await _releaseSpotifyLinkerService.LinkReleasesToSpotifyAsync();
-            await InitAsync();
-        }
-
-        private async Task UpdateAsync()
-        {
-            Tracks.Clear();
-            try
-            {
-                await _vkReleaseMonitorService.ParseAndSaveAsync();
-                await InitAsync();
-            }
-            catch (OperationCanceledException)
-            {
-                Log.Logger.Information("Operation cancelled by user");
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, "Error during update");
-            }
-        }
-
-        private async Task UpdatePlaylistAsync()
-        {
-            await _belReleasePlaylistUpdaterService.UpdateBelReleasePlaylistAsync();
-        }
-
     }
 }

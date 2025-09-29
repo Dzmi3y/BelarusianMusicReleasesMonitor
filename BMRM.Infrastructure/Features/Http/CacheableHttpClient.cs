@@ -38,8 +38,7 @@ public class CacheableHttpClient : ICacheableHttpClient
         return (T)data!;
     }
     
-    public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption httpCompletionOption,
-        TimeSpan ttl = default)
+    public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption httpCompletionOption, TimeSpan ttl = default)
     {
         ttl = ttl == default ? TimeSpan.FromSeconds(30) : ttl;
         var now = DateTime.UtcNow;
@@ -49,12 +48,16 @@ public class CacheableHttpClient : ICacheableHttpClient
             return (HttpResponseMessage)entry.Data;
 
         var response = await _httpClient.SendAsync(request, httpCompletionOption);
+        var contentType = response.Content.Headers.ContentType?.MediaType;
 
-        var data = await response.Content.ReadFromJsonAsync<HttpResponseMessage>();
-        _cache[url] = new CacheEntry(now, data!);
+        if (contentType == "application/json")
+        {
+            _cache[url] = new CacheEntry(now, response);
+        }
 
-        return (HttpResponseMessage)data!;
+        return response;
     }
+
 
     private record CacheEntry(DateTime Timestamp, object Data);
 }

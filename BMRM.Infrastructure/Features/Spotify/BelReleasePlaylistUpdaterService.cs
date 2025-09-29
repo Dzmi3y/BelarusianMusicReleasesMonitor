@@ -38,22 +38,35 @@ public class BelReleasePlaylistUpdaterService : IBelReleasePlaylistUpdaterServic
                 .Where(t => t.Playlists != null && !t.Playlists.Any(p => p.SpotifyPlaylistId == _playlistId))
                 .Where(t => t.Playlists != null && !t.Playlists.Any(p => p.SpotifyPlaylistId == _playlistId))
                 .Where(t => !existingTrackIds.Contains(t.Id))
+                .OrderByDescending(t => t.Release.CreatedAt)
                 .Select(t => t.Id)
+                .Take(_maxCount)
                 .ToListAsync();
+            if (candidateTrackIds.Count == 0)
+            {
+                Log.Logger.Information( "candidateTrackIds count is 0");
+                return;
+            }
 
             var totalAfterInsert = playlist.TotalTracks + candidateTrackIds.Count;
             await CleanupPlaylistAsync(totalAfterInsert, playlist);
 
-            await _spotifyPlaylistsService.AddPlaylistTracksAsync(_playlistId, candidateTrackIds);
+           
 
-            var playlistTrackLinks = candidateTrackIds.Select(trackId => new PlaylistTrack
+            var result= await _spotifyPlaylistsService.AddPlaylistTracksAsync(_playlistId, candidateTrackIds);
+
+            if (result != null)
             {
-                Id = Guid.NewGuid(),
-                SpotifyPlaylistId = _playlistId,
-                SpotifyTrackId = trackId
-            });
+                var playlistTrackLinks = candidateTrackIds.Select(trackId => new PlaylistTrack
+                {
+                    Id = Guid.NewGuid(),
+                    SpotifyPlaylistId = _playlistId,
+                    SpotifyTrackId = trackId
+                });
 
-            await _db.BulkInsertAsync(playlistTrackLinks);
+                await _db.BulkInsertAsync(playlistTrackLinks);
+            }
+
             await _db.SaveChangesAsync();
         }
         catch (Exception ex)

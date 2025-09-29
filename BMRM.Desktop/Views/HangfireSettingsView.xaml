@@ -3,13 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
-             xmlns:shell="clr-namespace:BMRM.Desktop.Views.Shell">
+             xmlns:shell="clr-namespace:BMRM.Desktop.Views.Shell"
+             xmlns:utils="clr-namespace:BMRM.Desktop.Utils">
     <UserControl.Resources>
 
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Resources/CommonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <utils:CronToHumanConverter x:Key="CronConverter" />
 
             <Style x:Key="LogItemTemplate" TargetType="ItemsControl">
                 <Setter Property="ItemTemplate">
@@ -76,17 +78,60 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock Grid.Column="0" TextAlignment="Center" Text="{Binding JobId}"
                                                    Foreground="#E0E0E0"
                                                    FontSize="14" />
-                                        <TextBlock Grid.Column="1" TextAlignment="Center" Text="{Binding Cron}"
+                                        <TextBlock Grid.Column="1" TextAlignment="Center"
+                                                   Text="{Binding Cron, Converter={StaticResource CronConverter}}"
                                                    Foreground="#9E9E9E"
                                                    FontSize="13" />
-                                        <TextBlock Grid.Column="2" TextAlignment="Center" Text="{Binding Enabled}"
-                                                   Foreground="#9E9E9E"
-                                                   FontSize="13" />
+                                        <Button x:Name="ToggleButton"
+                                                Grid.Column="2"
+                                                Width="80"
+                                                Margin="0,8,0,0"
+                                                Command="{Binding DataContext.JobToggleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding JobId}">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Background" Value="#388E3C" />
+                                                    <Setter Property="Foreground" Value="White" />
+                                                    <Setter Property="FontFamily" Value="Segoe UI" />
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                    <Setter Property="Padding" Value="10,5" />
+                                                    <Setter Property="BorderThickness" Value="0" />
+                                                    <Setter Property="Cursor" Value="Hand" />
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Height="30"
+                                                                        Background="{TemplateBinding Background}"
+                                                                        CornerRadius="4">
+                                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center" />
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Setter Property="Content" Value="Run" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Enabled}" Value="True">
+                                                            <Setter Property="Content" Value="Stop" />
+                                                            <Setter Property="Background" Value="#D32F2F" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="Run it once"
+                                                Grid.Column="3"
+                                                Width="80"
+                                                Background="#3949AB"
+                                                Margin="0,8,0,0"
+                                                Command="{Binding DataContext.RunJobOnceCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding JobId}" />
                                     </Grid>
                                 </Grid>
                             </Border>
@@ -107,7 +152,6 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -115,8 +159,9 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Command="{Binding DeleteCommand}" CommandParameter="my-job-id"
-                            Content="Remove job" Margin="10" />
+                    <Button Grid.Column="0" Command="{Binding NavigateCommand}"
+                            CommandParameter="NewReleasesView" Content="Back to Releases"
+                            Margin="10" />
                     <Button Grid.Column="1" Command="{Binding UpdateCommand}" Content="Update" Margin="10" />
 
                 </Grid>
@@ -150,19 +195,6 @@
                 <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Logs}" Style="{StaticResource LogItemTemplate}" />
                 </ScrollViewer>
-                <Grid Grid.Row="5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Button Grid.Column="0" Command="{Binding AddCommand}" Content="Add job"
-                            Margin="10" />
-                    <Button Grid.Column="1" Command="{Binding NavigateCommand}"
-                            CommandParameter="NewReleasesView" Content="Releases"
-                            Margin="10" />
-
-                </Grid>
             </Grid>
         </shell:ShellControl.Content>
     </shell:ShellControl>

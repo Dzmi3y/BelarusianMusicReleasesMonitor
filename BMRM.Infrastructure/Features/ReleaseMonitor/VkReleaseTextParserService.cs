@@ -37,18 +37,21 @@ public class VkReleaseTextParserService(IOptions<ReleasePatternConfig> options) 
 
         var type = DetermineType(input);
 
+        var releaseDate = ParseDate(ExtractValue(input, _patterns.ReleaseDate))?.ToUniversalTime();
+
         var release = new Release
         {
             Artist = artist,
             Title = title,
             ProcessingStatus = ProcessingStatus.New,
-            ReleaseDate = ParseDate(ExtractValue(input, _patterns.ReleaseDate)),
+            ReleaseDate = releaseDate,
             Genres = ExtractValue(input, _patterns.Genres),
             City = ExtractValue(input, _patterns.City),
             Type = type,
-            CreatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
             Id = ReleaseHasher.GetId(artist, title)
         };
+
 
         return release;
     }
