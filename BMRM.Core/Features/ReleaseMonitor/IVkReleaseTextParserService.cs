@@ -2,7 +2,7 @@
 
 namespace BMRM.Core.Features.ReleaseMonitor;
 
-public interface IReleaseTextParserService
+public interface IVkReleaseTextParserService
 {
     public Release? ParseSingleReleaseBlock(string html);
 }

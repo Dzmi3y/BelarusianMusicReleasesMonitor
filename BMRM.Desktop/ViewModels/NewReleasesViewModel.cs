@@ -19,7 +19,7 @@ namespace BMRM.Desktop.ViewModels
     {
         private AppDbContext _appDbContext;
         private string _title = "BMRM";
-        private IReleaseMonitorJob _releaseMonitorJob;
+        private IVkReleaseMonitorService _vkReleaseMonitorService;
         private readonly ISpotifyPlaylistsService _spotifyPlaylistsService;
         private readonly ISpotifySearchService _spotifySearchService;
         private readonly IReleaseSpotifyLinkerService _releaseSpotifyLinkerService;
@@ -46,12 +46,12 @@ namespace BMRM.Desktop.ViewModels
         public ObservableCollection<Release> Tracks { get; } = new();
 
         
-        public NewReleasesViewModel(AppDbContext appDbContext, IReleaseMonitorJob releaseMonitorJob , ISpotifyPlaylistsService spotifyPlaylistsService,
+        public NewReleasesViewModel(AppDbContext appDbContext, IVkReleaseMonitorService vkReleaseMonitorService , ISpotifyPlaylistsService spotifyPlaylistsService,
             ISpotifySearchService spotifySearchService, IReleaseSpotifyLinkerService releaseSpotifyLinkerService,
             IBelReleasePlaylistUpdaterService belReleasePlaylistUpdaterService,IRegionManager regionManager)
         {
             _appDbContext = appDbContext;
-            _releaseMonitorJob = releaseMonitorJob;
+            _vkReleaseMonitorService = vkReleaseMonitorService;
             _spotifyPlaylistsService = spotifyPlaylistsService;
             _spotifySearchService = spotifySearchService;
             _releaseSpotifyLinkerService = releaseSpotifyLinkerService;
@@ -96,11 +96,10 @@ namespace BMRM.Desktop.ViewModels
 
         private async Task UpdateAsync()
         {
-            var cts = new CancellationTokenSource();
             Tracks.Clear();
             try
             {
-                await _releaseMonitorJob.ParseAndSaveAsync(cts.Token);
+                await _vkReleaseMonitorService.ParseAndSaveAsync();
                 await InitAsync();
             }
             catch (OperationCanceledException)

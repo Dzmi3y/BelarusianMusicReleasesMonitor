@@ -2,16 +2,15 @@
 using System.Text;
 using BMRM.Core.Features.Http;
 using BMRM.Core.Features.ReleaseMonitor;
-using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace BMRM.Infrastructure.Features.ReleaseMonitor;
 
-public class HtmlDownloaderService(ICacheableHttpClient cacheableHttpClient)
-    : IHtmlDownloaderService
+public class VkHtmlDownloaderService(ICacheableHttpClient cacheableHttpClient)
+    : IVkHtmlDownloaderService
 {
     private readonly ICacheableHttpClient _cacheableHttpClient = cacheableHttpClient;
-    static HtmlDownloaderService()
+    static VkHtmlDownloaderService()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }

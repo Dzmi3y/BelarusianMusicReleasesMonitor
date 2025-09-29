@@ -7,16 +7,16 @@ using Serilog;
 
 namespace BMRM.Infrastructure.Features.ReleaseMonitor;
 
-public class ReleaseMonitorJob : IReleaseMonitorJob
+public class VkReleaseMonitorService : IVkReleaseMonitorService
 {
-    private readonly IReleaseTextParserService _parser;
-    private readonly IHtmlDownloaderService _downloader;
+    private readonly IVkReleaseTextParserService _parser;
+    private readonly IVkHtmlDownloaderService _downloader;
     private readonly AppDbContext _db;
     private readonly IConfiguration _configuration;
 
-    public ReleaseMonitorJob(
-        IReleaseTextParserService parser,
-        IHtmlDownloaderService downloader,
+    public VkReleaseMonitorService(
+        IVkReleaseTextParserService parser,
+        IVkHtmlDownloaderService downloader,
         AppDbContext db,
         IConfiguration configuration)
     {
@@ -25,29 +25,17 @@ public class ReleaseMonitorJob : IReleaseMonitorJob
         _db = db;
         _configuration = configuration;
     }
-
-
-    public async Task ExecuteAsync(CancellationToken cancellationToken = default)
-    {
-        Log.Logger.Information("ReleaseMonitorJob started at: {time}", DateTimeOffset.Now);
-        var random = new Random();
-        var delayMinutes = random.Next(0, 360);
-        Log.Logger.Information("ReleaseMonitorJob wait for: {time}", TimeSpan.FromMinutes(delayMinutes));
-        await Task.Delay(TimeSpan.FromMinutes(delayMinutes), cancellationToken);
-
-        await ParseAndSaveAsync(cancellationToken);
-    }
-
-    public async Task ParseAndSaveAsync(CancellationToken cancellationToken)
+    
+    public async Task ParseAndSaveAsync()
     {
         try
         {
             var url = _configuration["ParsingPageUrl"];
-            using var reader = await _downloader.GetHtmlStreamReaderAsync(url, cancellationToken);
+            using var reader = await _downloader.GetHtmlStreamReaderAsync(url);
             var newReleases = new List<Release>();
 
             var knownIds = new HashSet<string>(
-                await _db.Releases.Select(r => r.Id).ToListAsync(cancellationToken)
+                await _db.Releases.Select(r => r.Id).ToListAsync()
             );
 
             while (!reader.EndOfStream)
@@ -69,7 +57,7 @@ public class ReleaseMonitorJob : IReleaseMonitorJob
             if (newReleases.Count > 0)
             {
                 _db.Releases.AddRange(newReleases);
-                await _db.SaveChangesAsync(cancellationToken);
+                await _db.SaveChangesAsync();
             }
 
             Log.Logger.Information("Saved {Count} new releases", newReleases.Count);

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace BMRM.Infrastructure.Features.ReleaseMonitor;
 
-public class ReleaseTextParserService(IOptions<ReleasePatternConfig> options) : IReleaseTextParserService
+public class VkReleaseTextParserService(IOptions<ReleasePatternConfig> options) : IVkReleaseTextParserService
 {
     private readonly ReleasePatternConfig _patterns = options.Value;
 

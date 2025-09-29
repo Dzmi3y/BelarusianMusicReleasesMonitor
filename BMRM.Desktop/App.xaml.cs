@@ -112,8 +112,6 @@ namespace BMRM.Desktop
             containerRegistry.RegisterInstance(JobStorage.Current);
             containerRegistry.RegisterSingleton<IRecurringJobManager>(() =>
                 new RecurringJobManager(JobStorage.Current));
-            containerRegistry.RegisterSingleton<IRecurringJobService, RecurringJobService>();
-
 
             var dbConnection = config.GetConnectionString("Default");
             containerRegistry.Register<AppDbContext>(() =>
@@ -127,14 +125,17 @@ namespace BMRM.Desktop
 
             
             
+            containerRegistry.RegisterSingleton<IBandcampReleaseMonitorService, BandcampReleaseMonitorService>();
+            containerRegistry.RegisterSingleton<IVkReleaseMonitorJob, VkReleaseMonitorJob>();
+            containerRegistry.RegisterSingleton<IBandcampReleaseMonitorJob, BandcampReleaseMonitorJob>(); 
             containerRegistry.RegisterSingleton<IBackgroundJobClient, BackgroundJobClient>();  
             containerRegistry.RegisterSingleton<IJobManager, JobManager>();
             containerRegistry.RegisterSingleton<IUpdateSpotifyPlaylistJob, UpdateSpotifyPlaylistJob>();
             containerRegistry.RegisterSingleton<IJobDispatcherService, JobDispatcherService>();
             containerRegistry.RegisterSingleton<IJobRepository, JobRepository>();
-            containerRegistry.RegisterSingleton<IReleaseMonitorJob, ReleaseMonitorJob>();
-            containerRegistry.RegisterSingleton<IReleaseTextParserService, ReleaseTextParserService>();
-            containerRegistry.RegisterSingleton<IHtmlDownloaderService, HtmlDownloaderService>();
+            containerRegistry.RegisterSingleton<IVkReleaseMonitorService, VkReleaseMonitorService>();
+            containerRegistry.RegisterSingleton<IVkReleaseTextParserService, VkReleaseTextParserService>();
+            containerRegistry.RegisterSingleton<IVkHtmlDownloaderService, VkHtmlDownloaderService>();
             containerRegistry.RegisterSingleton<ISpotifyPlaylistsService, SpotifyPlaylistsService>();
             containerRegistry.RegisterSingleton<ISpotifySimpleTokenService, SpotifySimpleTokenService>();
             containerRegistry.RegisterSingleton<ISpotifySearchService, SpotifySearchService>();
