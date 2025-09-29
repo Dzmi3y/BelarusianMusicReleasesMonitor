@@ -8,5 +8,7 @@ public interface IJobRepository
     IEnumerable<JobDefinition> GetAll();
     void Save(JobDefinition job);
     void Disable(string jobId);
+    JobLog? GetLastLog(string jobId);
     void LogRun(string jobId, DateTime timestamp, bool success, string? error = null);
+    List<JobLog> GetLastLogs(int count);
 }

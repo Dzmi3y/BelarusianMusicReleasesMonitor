@@ -11,6 +11,52 @@
                 <ResourceDictionary Source="/Resources/CommonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <Style x:Key="LogItemTemplate" TargetType="ItemsControl">
+                <Setter Property="ItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <Border x:Name="ItemBorder"
+                                    Background="#2C2C2C"
+                                    CornerRadius="4"
+                                    Margin="4"
+                                    Padding="8">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid Height="40">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" TextAlignment="Center" Text="{Binding Id}"
+                                                   Foreground="#E0E0E0"
+                                                   FontSize="14" />
+                                        <TextBlock Grid.Column="1" TextAlignment="Center" Text="{Binding JobId}"
+                                                   Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                        <TextBlock Grid.Column="2" TextAlignment="Center" Text="{Binding Timestamp}"
+                                                   Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                        <TextBlock Grid.Column="3" TextAlignment="Center" Text="{Binding Success}"
+                                                   Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                        <TextBlock Grid.Column="4" TextAlignment="Center" Text="{Binding ErrorMessage}"
+                                                   Foreground="#9E9E9E"
+                                                   FontSize="13" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
             <Style x:Key="JobItemTemplate" TargetType="ItemsControl">
                 <Setter Property="ItemTemplate">
                     <Setter.Value>
@@ -32,11 +78,14 @@
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock Grid.Column="0" TextAlignment="Center" Text="{Binding JobId}" Foreground="#E0E0E0"
+                                        <TextBlock Grid.Column="0" TextAlignment="Center" Text="{Binding JobId}"
+                                                   Foreground="#E0E0E0"
                                                    FontSize="14" />
-                                        <TextBlock Grid.Column="1" TextAlignment="Center" Text="{Binding Cron}" Foreground="#9E9E9E"
+                                        <TextBlock Grid.Column="1" TextAlignment="Center" Text="{Binding Cron}"
+                                                   Foreground="#9E9E9E"
                                                    FontSize="13" />
-                                        <TextBlock Grid.Column="2" TextAlignment="Center" Text="{Binding Enabled}" Foreground="#9E9E9E"
+                                        <TextBlock Grid.Column="2" TextAlignment="Center" Text="{Binding Enabled}"
+                                                   Foreground="#9E9E9E"
                                                    FontSize="13" />
                                     </Grid>
                                 </Grid>
@@ -57,6 +106,8 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -69,10 +120,10 @@
                     <Button Grid.Column="1" Command="{Binding UpdateCommand}" Content="Update" Margin="10" />
 
                 </Grid>
-                <ItemsControl Grid.Row="1" ItemsSource="{Binding ColumnHeaders}">
+                <ItemsControl Grid.Row="1" ItemsSource="{Binding JobColumnHeaders}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid Rows="1" Columns="{Binding ColumnHeaders.Count}" />
+                            <UniformGrid Rows="1" Columns="{Binding JobColumnHeaders.Count}" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -84,7 +135,22 @@
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Jobs}" Style="{StaticResource JobItemTemplate}" />
                 </ScrollViewer>
-                <Grid Grid.Row="3">
+                <ItemsControl Grid.Row="3" ItemsSource="{Binding LogColumnHeaders}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1" Columns="{Binding LogColumnHeaders.Count}" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" TextAlignment="Center" FontSize="12" Foreground="#E0E0E0" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Logs}" Style="{StaticResource LogItemTemplate}" />
+                </ScrollViewer>
+                <Grid Grid.Row="5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />

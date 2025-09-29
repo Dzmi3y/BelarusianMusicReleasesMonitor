@@ -125,6 +125,10 @@ namespace BMRM.Desktop
             containerRegistry.RegisterInstance<ICacheableHttpClient>(
                 new CacheableHttpClient(new HttpClient()));
 
+            
+            
+            containerRegistry.RegisterSingleton<IBackgroundJobClient, BackgroundJobClient>();  
+            containerRegistry.RegisterSingleton<IJobManager, JobManager>();
             containerRegistry.RegisterSingleton<IUpdateSpotifyPlaylistJob, UpdateSpotifyPlaylistJob>();
             containerRegistry.RegisterSingleton<IJobDispatcherService, JobDispatcherService>();
             containerRegistry.RegisterSingleton<IJobRepository, JobRepository>();

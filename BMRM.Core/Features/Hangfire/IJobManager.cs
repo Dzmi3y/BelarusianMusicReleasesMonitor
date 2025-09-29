@@ -8,4 +8,5 @@ public interface IJobManager
     void RemoveJob(JobId jobId);
     void RunJobNow(JobId jobId);
     IEnumerable<JobDefinition> GetAllJobs();
+    List<JobLog> GetLastLogs(int count);
 }

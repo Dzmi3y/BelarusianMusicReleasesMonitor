@@ -14,6 +14,7 @@ public class UpdateSpotifyPlaylistJob:IUpdateSpotifyPlaylistJob
 
     public async Task ExecuteJobAsync()
     {
-        await _belReleasePlaylistUpdaterService.UpdateBelReleasePlaylistAsync();
+        Console.WriteLine("Updating Spotify Playlist");
+        // await _belReleasePlaylistUpdaterService.UpdateBelReleasePlaylistAsync();
     }
 }

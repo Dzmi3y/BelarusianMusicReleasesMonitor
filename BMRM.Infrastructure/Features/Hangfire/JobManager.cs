@@ -47,11 +47,21 @@ public class JobManager : IJobManager
 
     public IEnumerable<JobDefinition> GetAllJobs() => _repo.GetAll();
 
-    private async Task ExecuteJob(JobId jobId)
+    public async Task ExecuteJob(JobId jobId)
     {
         var job = _repo.Get(jobId.GetDescription());
         if (job == null || !job.Enabled) return;
-
+        
+        var lastLog = _repo.GetLastLog(jobId.GetDescription());
+        if (lastLog != null)
+        {
+            var timeSinceLastLog = DateTime.UtcNow - lastLog.Timestamp;
+            if (timeSinceLastLog < TimeSpan.FromMinutes(1))
+            {
+                return;
+            }
+        }
+        
         try
         {
             await _jobDispatcherService.DispatchAsync(jobId);
@@ -61,5 +71,10 @@ public class JobManager : IJobManager
         {
             _repo.LogRun(jobId.GetDescription(), DateTime.UtcNow, false, ex.Message);
         }
+    }
+
+    public List<JobLog> GetLastLogs(int count)
+    {
+       return _repo.GetLastLogs(count);
     }
 }

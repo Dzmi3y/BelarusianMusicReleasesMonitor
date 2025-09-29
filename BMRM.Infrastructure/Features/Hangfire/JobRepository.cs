@@ -1,6 +1,7 @@
 ﻿using BMRM.Core.Features.Hangfire;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace BMRM.Infrastructure.Features.Hangfire;
 
@@ -37,6 +38,25 @@ public class JobRepository : IJobRepository
             job.Enabled = false;
             _db.SaveChanges();
         }
+    }
+
+    public JobLog? GetLastLog(string jobId)
+    {
+        var log = _db.JobLogs
+            .AsNoTracking()
+            .Where(j => j.JobId == jobId)
+            .OrderByDescending(j => j.Timestamp)
+            .FirstOrDefault();
+        return log;
+    }
+    
+    public List<JobLog> GetLastLogs(int count)
+    {
+        var log = _db.JobLogs
+            .AsNoTracking()
+            .OrderByDescending(j => j.Timestamp)
+            .Take(count).ToList();
+        return log;
     }
 
     public void LogRun(string jobId, DateTime timestamp, bool success, string? error = null)
