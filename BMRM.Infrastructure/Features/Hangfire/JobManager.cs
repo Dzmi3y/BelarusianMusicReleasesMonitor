@@ -58,12 +58,14 @@ public class JobManager : IJobManager
             var timeSinceLastLog = DateTime.UtcNow - lastLog.Timestamp;
             if (timeSinceLastLog < TimeSpan.FromMinutes(1))
             {
+                _repo.LogRun(jobId.GetDescription(), DateTime.UtcNow, false, "Rejected");
                 return;
             }
         }
         
         try
         {
+            await DelayAsync(jobId.GetDescription(),10);
             await _jobDispatcherService.DispatchAsync(jobId);
             _repo.LogRun(jobId.GetDescription(), DateTime.UtcNow, true);
         }
@@ -76,5 +78,14 @@ public class JobManager : IJobManager
     public List<JobLog> GetLastLogs(int count)
     {
        return _repo.GetLastLogs(count);
+    }
+
+    private async Task DelayAsync(string jobId,int delay)
+    {
+        var random = new Random();
+        var delayMinutes = random.Next(0, delay);
+        var info  = $"{jobId} wait for: {TimeSpan.FromMinutes(delayMinutes)}" ;
+        _repo.LogRun(jobId, DateTime.UtcNow, false, info);
+        await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
     }
 }

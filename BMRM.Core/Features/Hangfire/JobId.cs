@@ -7,6 +7,10 @@ public enum JobId
 {
     [Description("update-spotify-playlist")]
     UpdateSpotifyPlaylist,
+    [Description("vk-belmuz-parsing")]
+    VkBelmuzParsing,
+    [Description("bandcamp-belmuz-parsing")]
+    BandcampBelmuzParsing,
 }
 
 public static class EnumExtensions
