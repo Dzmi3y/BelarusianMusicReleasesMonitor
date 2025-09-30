@@ -1,4 +1,4 @@
-﻿namespace BMRM.Core.Features.ReleaseMonitor;
+﻿namespace BMRM.Core.Features.ReleaseMonitor.Bandcamp;
 
 public interface IBandcampReleaseMonitorService
 {

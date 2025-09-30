@@ -1,10 +1,10 @@
 ﻿using System.IO.Compression;
 using System.Text;
 using BMRM.Core.Features.Http;
-using BMRM.Core.Features.ReleaseMonitor;
+using BMRM.Core.Features.ReleaseMonitor.Vk;
 using Serilog;
 
-namespace BMRM.Infrastructure.Features.ReleaseMonitor;
+namespace BMRM.Infrastructure.Features.ReleaseMonitor.Vk;
 
 public class VkHtmlDownloaderService(ICacheableHttpClient cacheableHttpClient)
     : IVkHtmlDownloaderService

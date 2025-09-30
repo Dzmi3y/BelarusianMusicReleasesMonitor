@@ -53,7 +53,6 @@ public abstract class SpotifyBaseService
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(4));
                     var newToken = await _tokenService.UpdateTokenAsync();
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", newToken.AccessToken);
                     return await _cacheableHttpClient.SendAsync<T>(request, HttpCompletionOption.ResponseHeadersRead);

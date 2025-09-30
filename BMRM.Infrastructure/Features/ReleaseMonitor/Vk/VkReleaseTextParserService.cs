@@ -1,12 +1,12 @@
 ﻿using System.Text.RegularExpressions;
 using BMRM.Core.Configuration;
-using BMRM.Core.Features.ReleaseMonitor;
+using BMRM.Core.Features.ReleaseMonitor.Vk;
 using BMRM.Core.Shared.Enums;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Utils;
 using Microsoft.Extensions.Options;
 
-namespace BMRM.Infrastructure.Features.ReleaseMonitor;
+namespace BMRM.Infrastructure.Features.ReleaseMonitor.Vk;
 
 public class VkReleaseTextParserService(IOptions<ReleasePatternConfig> options) : IVkReleaseTextParserService
 {

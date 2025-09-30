@@ -1,5 +1,7 @@
 ﻿using BMRM.Core.Features.Hangfire;
 using BMRM.Core.Features.ReleaseMonitor;
+using BMRM.Core.Features.ReleaseMonitor.Bandcamp;
+using BMRM.Core.Features.ReleaseMonitor.Vk;
 using BMRM.Core.Features.Spotify;
 using BMRM.Infrastructure.Features.Hangfire.Jobs;
 using Serilog;

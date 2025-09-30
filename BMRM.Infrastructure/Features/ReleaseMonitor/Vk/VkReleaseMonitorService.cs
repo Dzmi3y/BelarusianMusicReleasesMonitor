@@ -1,11 +1,11 @@
-﻿using BMRM.Core.Features.ReleaseMonitor;
+﻿using BMRM.Core.Features.ReleaseMonitor.Vk;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 
-namespace BMRM.Infrastructure.Features.ReleaseMonitor;
+namespace BMRM.Infrastructure.Features.ReleaseMonitor.Vk;
 
 public class VkReleaseMonitorService : IVkReleaseMonitorService
 {

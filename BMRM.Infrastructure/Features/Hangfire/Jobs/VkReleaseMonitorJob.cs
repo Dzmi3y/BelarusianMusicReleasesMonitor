@@ -1,5 +1,6 @@
 ﻿using BMRM.Core.Features.Hangfire.Jobs;
 using BMRM.Core.Features.ReleaseMonitor;
+using BMRM.Core.Features.ReleaseMonitor.Vk;
 using BMRM.Core.Features.Spotify;
 
 namespace BMRM.Infrastructure.Features.Hangfire.Jobs;
