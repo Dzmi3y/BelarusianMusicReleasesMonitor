@@ -3,8 +3,6 @@ using BMRM.Core.Shared.Enums;
 using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using EFCore.BulkExtensions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Serilog;
 
 
@@ -63,6 +61,7 @@ public class ReleaseSpotifyLinkerService:IReleaseSpotifyLinkerService
         catch (Exception ex)
         {
              Log.Logger.Error(ex, "Error while linking releases");
+             throw;
         }
     }
 }

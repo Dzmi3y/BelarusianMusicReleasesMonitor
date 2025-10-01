@@ -1,6 +1,7 @@
 ﻿using BMRM.Core.Features.Hangfire;
 using BMRM.Core.Shared.Models;
 using Hangfire;
+using Serilog;
 
 namespace BMRM.Infrastructure.Features.Hangfire;
 
@@ -47,7 +48,7 @@ public class JobManager : IJobManager
 
     public IEnumerable<JobDefinition> GetAllJobs() => _repo.GetAll();
 
-    [AutomaticRetry(Attempts = 0)]
+    // [AutomaticRetry(Attempts = 0)]
     public async Task ExecuteJob(string jobId, bool IsRunOnce = false)
     {
         var job = _repo.Get(jobId);
@@ -83,6 +84,7 @@ public class JobManager : IJobManager
         catch (Exception ex)
         {
             _repo.LogRun(jobId, DateTime.UtcNow, false, ex.Message);
+            Log.Error(ex,$"Error executing job: {jobId}");
         }
     }
 

@@ -22,7 +22,8 @@ public class JobRepository : IJobRepository
         {
             JobIds.UpdateSpotifyPlaylist,
             JobIds.VkBelmuzParsing,
-            JobIds.BandcampBelmuzParsing
+            JobIds.BandcampBelmuzParsing,
+            JobIds.ReleaseSpotifyLinker
         };
 
         var existingJobIds = _db.JobDefinitions

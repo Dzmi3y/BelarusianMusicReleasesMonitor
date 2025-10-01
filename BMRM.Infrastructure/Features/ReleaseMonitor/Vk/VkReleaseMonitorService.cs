@@ -65,6 +65,7 @@ public class VkReleaseMonitorService : IVkReleaseMonitorService
         catch (Exception ex)
         {
              Log.Logger.Error(ex, "Failed to load or process HTML");
+             throw;
         }
         finally
         {

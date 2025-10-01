@@ -52,7 +52,6 @@ public class VkReleaseTextParserService(IOptions<ReleasePatternConfig> options) 
             Id = ReleaseHasher.GetId(artist, title)
         };
 
-
         return release;
     }
 

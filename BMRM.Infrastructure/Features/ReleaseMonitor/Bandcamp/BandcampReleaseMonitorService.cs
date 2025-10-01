@@ -10,6 +10,11 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Serilog;
 using System.Text.Json;
+using BMRM.Core.Shared.Enums;
+using BMRM.Core.Shared.Models;
+using BMRM.Infrastructure.Utils;
+using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 
@@ -52,22 +57,11 @@ public class BandcampReleaseMonitorService : IBandcampReleaseMonitorService
         var jsonBody = JsonConvert.SerializeObject(bandcampSearchRequest, Formatting.Indented);
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, _url);
-            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            var (stream, options) = await GetBandcampResponse(jsonBody);
+            await using var stream1 = stream;
+            var bandcampResponse = await JsonSerializer.DeserializeAsync<BandcampResponse>(stream, options);
 
-
-            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-
-            await using var stream = await response.Content.ReadAsStreamAsync();
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-
-            var BandcampResponse = await JsonSerializer.DeserializeAsync<BandcampResponse>(stream, options);
-            //todo
-            
+            await SaveNewReleases(bandcampResponse);
         }
         catch (Exception ex)
         {
@@ -76,6 +70,65 @@ public class BandcampReleaseMonitorService : IBandcampReleaseMonitorService
         finally
         {
             Log.Logger.Information("BandcampReleaseMonitorService finished at: {time}", DateTimeOffset.Now);
+        }
+    }
+
+    private async Task<(Stream stream, JsonSerializerOptions options)> GetBandcampResponse(string jsonBody)
+    {
+        Stream? stream = null;
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, _url);
+            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            stream = await response.Content.ReadAsStreamAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            return (stream, options);
+        }
+        catch
+        {
+            if (stream != null) await stream.DisposeAsync();
+            throw;
+        }
+    }
+
+    private async Task SaveNewReleases(BandcampResponse? bandcampResponse)
+    {
+        var releaseIds = _db.Releases
+            .AsNoTracking()
+            .Select(r => r.Id)
+            .ToHashSet();
+        var releases = new List<Release>();
+
+        if (bandcampResponse != null)
+        {
+            foreach (var track in bandcampResponse.Results)
+            {
+                var id = ReleaseHasher.GetId(track.BandName, track.Title);
+                if (releaseIds.Add(id))
+                    releases.Add(new Release
+                    {
+                        Id = id,
+                        Title = track.Title,
+                        ReleaseDate = track.ReleaseDate,
+                        Artist = track.BandName,
+                        City = track.BandLocation,
+                        CreatedAt = DateTime.UtcNow,
+                        Genres = BandcampGenreMapper.GetGenreById(track.BandGenreId),
+                        ProcessingStatus = ProcessingStatus.New
+                    });
+            }
+        }
+
+        if (releases.Count > 0)
+        {
+            await _db.BulkInsertAsync(releases);
         }
     }
 }

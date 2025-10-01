@@ -1,6 +1,6 @@
 ﻿namespace BMRM.Infrastructure.Utils;
 
-public static class GenreMapper
+public static class BandcampGenreMapper
 {
     private static readonly Dictionary<int, string> _genres = new()
     {

@@ -2,7 +2,6 @@
 using BMRM.Core.Features.Spotify;
 using BMRM.Core.Features.Spotify.SpotifyResponseModels;
 using BMRM.Infrastructure.Data;
-using Microsoft.Extensions.Logging;
 
 namespace BMRM.Infrastructure.Features.Spotify;
 

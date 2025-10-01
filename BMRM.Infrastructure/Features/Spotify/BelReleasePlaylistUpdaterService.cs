@@ -4,7 +4,6 @@ using BMRM.Core.Shared.Models;
 using BMRM.Infrastructure.Data;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace BMRM.Infrastructure.Features.Spotify;
@@ -44,16 +43,15 @@ public class BelReleasePlaylistUpdaterService : IBelReleasePlaylistUpdaterServic
                 .ToListAsync();
             if (candidateTrackIds.Count == 0)
             {
-                Log.Logger.Information( "candidateTrackIds count is 0");
+                Log.Logger.Information("candidateTrackIds count is 0");
                 return;
             }
 
             var totalAfterInsert = playlist.TotalTracks + candidateTrackIds.Count;
             await CleanupPlaylistAsync(totalAfterInsert, playlist);
 
-           
 
-            var result= await _spotifyPlaylistsService.AddPlaylistTracksAsync(_playlistId, candidateTrackIds);
+            var result = await _spotifyPlaylistsService.AddPlaylistTracksAsync(_playlistId, candidateTrackIds);
 
             if (result != null)
             {
@@ -71,7 +69,8 @@ public class BelReleasePlaylistUpdaterService : IBelReleasePlaylistUpdaterServic
         }
         catch (Exception ex)
         {
-             Log.Logger.Error(ex, "Error updating Belarusian release playlist");
+            Log.Logger.Error(ex, "Error updating Belarusian release playlist");
+            throw;
         }
     }
 
@@ -95,7 +94,7 @@ public class BelReleasePlaylistUpdaterService : IBelReleasePlaylistUpdaterServic
             var dbTracksToRemove = await _db.SpotifyTracks
                 .Where(t => trackIdsToRemove.Contains(t.Id))
                 .ToListAsync();
-
+            
             await _db.BulkDeleteAsync(dbTracksToRemove);
             await _db.SaveChangesAsync();
 

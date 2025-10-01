@@ -53,14 +53,14 @@ namespace BMRM.Desktop
 
             InitializeTrayIcon();
 
-            var dryIocContainer = Container.GetContainer(); // Prism DryIoc
+            var dryIocContainer = Container.GetContainer();
             GlobalConfiguration.Configuration.UseActivator(new DryIocJobActivator(dryIocContainer));
 
             var storage = Container.Resolve<JobStorage>();
             var options = new BackgroundJobServerOptions
             {
                 ServerName = "BMRM-Worker",
-                WorkerCount = 2
+                WorkerCount = 1
             };
             var server = new BackgroundJobServer(options, storage);
 
@@ -126,9 +126,9 @@ namespace BMRM.Desktop
 
             containerRegistry.RegisterInstance<ICacheableHttpClient>(
                 new CacheableHttpClient(new HttpClient()));
-
             
             
+            containerRegistry.RegisterSingleton<IReleaseSpotifyLinkerJob, ReleaseSpotifyLinkerJob>();
             containerRegistry.RegisterSingleton<IBandcampReleaseMonitorService, BandcampReleaseMonitorService>();
             containerRegistry.RegisterSingleton<IVkReleaseMonitorJob, VkReleaseMonitorJob>();
             containerRegistry.RegisterSingleton<IBandcampReleaseMonitorJob, BandcampReleaseMonitorJob>(); 
